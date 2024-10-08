@@ -18,9 +18,9 @@ tags:
 
 
 
-| ![Image Description](../../../Server%20Diagram.jpg) |
-| --------------------------------------------------- |
-| Diagram of the overall setup                        |
+| ![Image Description](assets/Server%20Diagram.jpg) |
+| ------------------------------------------------- |
+| Diagram of the overall setup                      |
 
 
 
