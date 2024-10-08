@@ -1,4 +1,3 @@
-// make a priitive for the state
 
 function interpolateColor(color1, color2, factor) {
     const result = color1.slice();
@@ -35,6 +34,7 @@ class space {
         this.oneProb = oneProb;
         this.state = state;
         this.color = getColorForProbability(this.zeroProb, [0, 0, 255], [255,0,0], 0, 1);
+        this.gates = [];
     }
     updateState() {
         this.color = getColorForProbability(this.zeroProb, [0, 0, 255], [255,0,0], 0, 1);

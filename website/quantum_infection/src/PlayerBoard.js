@@ -28,11 +28,13 @@ function customTypeBoard(board, size){
       board.accessSpace(plusSpaces[i][1],plusSpaces[i][0]).zeroProb = .5;
       board.accessSpace(plusSpaces[i][1],plusSpaces[i][0]).oneProb = .5;
       board.accessSpace(plusSpaces[i][1],plusSpaces[i][0]).state = '+';
+      board.accessSpace(plusSpaces[i][1],plusSpaces[i][0]).updateState();
     }
     for(let i = 0; i < minusSpaces.length; i++){
       board.accessSpace(minusSpaces[i][1],minusSpaces[i][0]).zeroProb = .5;
       board.accessSpace(minusSpaces[i][1],minusSpaces[i][0]).oneProb = .5;
       board.accessSpace(minusSpaces[i][1],minusSpaces[i][0]).state = '-';
+      board.accessSpace(plusSpaces[i][1],plusSpaces[i][0]).updateState();
     }
   }
   board.accessSpace(0,0).zeroProb = 1;
