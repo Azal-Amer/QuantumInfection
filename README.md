@@ -29,4 +29,8 @@ Working on designing the interface, I'll use react
 
 
 ## Python Notes
+
+Todo:
+- Convert ordered pair to 0-indexing
+Hello darkness my old friend
 Beebadoobop skadoop another change
