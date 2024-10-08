@@ -16,8 +16,13 @@ tags:
 
 - Any functions used, must take the cell(s) acted on and the move, and return the probabilities of being in the $\ket{0},\ket{1}$ state, along with the cell associated.
 
-| [![Image Description](assets/Server%20Diagram.jpg)------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Diagram of the overall setup                                                                                                                                                                                                                                         |
+
+
+| ![Image Description](../../../Server%20Diagram.jpg) |
+| --------------------------------------------------- |
+| Diagram of the overall setup                        |
+
+
 
 ## Server Notes
 
