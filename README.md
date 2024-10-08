@@ -28,3 +28,5 @@ tags:
 
 
 ## Python Notes
+Todo:
+- Convert ordered pair to 0-indexing
