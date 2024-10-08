@@ -32,9 +32,4 @@ Working on designing the interface, I'll use react
 <<<<<<< Updated upstream
 Todo:
 - Convert ordered pair to 0-indexing
-=======
-- Heyo this is a test
-
-> [!Warning] Title
-> Contents
->>>>>>> Stashed changes
+asdfjkl;
