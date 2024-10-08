@@ -29,7 +29,4 @@ Working on designing the interface, I'll use react
 
 
 ## Python Notes
-<<<<<<< Updated upstream
-Todo:
-- Convert ordered pair to 0-indexing
-asdfjkl;
+Beebadoobop skadoop another change
