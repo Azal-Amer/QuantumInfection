@@ -41,18 +41,40 @@ def twoQubitOp(qc,qubit1,qubit2,op):
     else:
         print("Invalid operation")
 
-def measure(qc,qubit):
+def singleMeasure(qc,qubit):
     qc.measure(qubit,qubit)
     job = backend.run(qc,shots=1)
     results = job.result()
     counts = results.get_counts(qc)
     print(counts)
 
-def endGame(qc):
+def endMeasure(qc):
+    measureList = []
     for i in range(36):
         if i not in aliceSquares and i not in bobSquares:
-            measure(qc,i)
+            measureList.append(i)
+    print(measureList)
+    qc.measure(measureList,measureList)
+    job = backend.run(qc,shots=1)
+    results = job.result()
+    counts = results.get_counts(qc)
+    print(counts)
+    return [counts,measureList]
+        
+    
+
+def endGame(qc):
+    counts,measureList = endMeasure(qc)
+    result = list(counts.keys())[0]
+    
+    for i in measureList:
+        if result[i]=='0':
+            aliceSquares.append(i)
+        elif result[i]=='1':
+            bobSquares.append(i)
     print("End Game")
+    print("Alice's squares: ",aliceSquares)
+    print("Bob's squares: ",bobSquares)
 
 if __name__ == "__main__":
     qc = QuantumCircuit(36,36)
