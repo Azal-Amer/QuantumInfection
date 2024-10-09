@@ -51,7 +51,14 @@ We have a few things we want to get working,
 > [!Alert] Requirements
 > - Nodejs
 
+TO RUN, enter the commands while open in the main directory in VSCode
+```
+cd ./website/quantum_infection
+npm run start
+```
+Make sure you have node installed
 ### Object Classes
+
 #### - [ ] Board and Spaces
 The board has two functions, 
 - constructor: Takes the size of the board and populates with spaces
@@ -65,5 +72,8 @@ The spaces have two functions, and several properties
 - Color
 	- The color is derived from a colormap
 
+Right now I'm trying to handle gate logic. My suspicions from the debug logs are saying that for some reason, adding different gates is not preserved, something is resetting the board. 
+Also, I resized the board.
+C
 ## Python Notes
 

@@ -26,7 +26,7 @@ export function getColorForProbability(probability, color1, color2, prob1, prob2
   }
 //   Above functions were written by Claude 3.5 Sonnet
 
-class space {
+export class Space {
     constructor(x, y,zeroProb = .5,oneProb = .5 ,state = '+') {
         this.x = x;
         this.y = y;
@@ -34,14 +34,14 @@ class space {
         this.oneProb = oneProb;
         this.state = state;
         this.color = getColorForProbability(this.zeroProb, [0, 0, 255], [255,0,0], 0, 1);
-        this.gates = [];
+        this.gates = ["I"];
     }
     updateState() {
         this.color = getColorForProbability(this.zeroProb, [0, 0, 255], [255,0,0], 0, 1);
     }
    
 }
-class boardSpaces {
+export class BoardSpaces {
     constructor(size) {
         this.size = size;
         this.spaces = this.createSpaces();
@@ -52,7 +52,7 @@ class boardSpaces {
         for (let i = 0; i < this.size; i++) {
             let row = [];
             for (let j = 0; j < this.size; j++) {
-                row.push(new space(i, j));
+                row.push(new Space(i, j));
             }
             spaces.push(row);
         }
@@ -62,4 +62,4 @@ class boardSpaces {
         return this.spaces[x][y];
     }
 }
-export default boardSpaces;
+// export default BoardSpaces,space;
