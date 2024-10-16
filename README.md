@@ -75,5 +75,16 @@ The spaces have two functions, and several properties
 Right now I'm trying to handle gate logic. My suspicions from the debug logs are saying that for some reason, adding different gates is not preserved, something is resetting the board. 
 Also, I resized the board.
 C
+
+Update for today, is that the effect classes don't have direct modifying perms, you need to use setters and getters. Right now, I want to find a way to display the information about the board on the side in the main context, so I'm using a large-scope variable of `boardInfo`. 
+Next time, make it so that there's a hover and a clicked info, then remove it from the bottom.
+Also, add some more styling to the gate palate. Then add the control gates, with fixed quantities.
 ## Python Notes
+
+
+```run-python
+def f(a=4,b=3,c=5,d=1):
+	return a+b*c+d
+print(f(5,2))
+```
 

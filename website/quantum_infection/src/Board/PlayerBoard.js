@@ -44,13 +44,13 @@ function customTypeBoard(board, size) {
   board.accessSpace(size-1,size-1).updateState();
   return board;
 }
-
-const PlayerBoard = forwardRef(({ gates, activeGate,ref }) => {
-  console.log(gates);
+const PlayerBoard = forwardRef(({ gates, activeGate,setActiveGate,setBoardInfo }, ref) => {
   const size = 6; // 6x6 grid
   const canvasRef = useRef(null);
   const [board, setBoard] = useState(() => customTypeBoard(new BoardSpaces(size), size));
+  const [hoveredSquare, setHoveredSquare] = useState(null);
   const [clickedSquare, setClickedSquare] = useState(null);
+  const [hoveredGates, setHoveredGates] = useState([]);
 
   const canvasSize = 700; // pixels
   const squareSize = canvasSize / size;
@@ -59,14 +59,13 @@ const PlayerBoard = forwardRef(({ gates, activeGate,ref }) => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
 
-    // Draw the grid
     const drawGrid = () => {
       ctx.clearRect(0, 0, canvasSize, canvasSize);
       for (let i = 0; i < size; i++) {
         for (let j = 0; j < size; j++) {
           const space = board.accessSpace(i, j);
           
-          // Fill square with color
+          // Fill square with its original color
           ctx.fillStyle = space.color;
           ctx.fillRect(j * squareSize, i * squareSize, squareSize, squareSize);
           
@@ -84,9 +83,22 @@ const PlayerBoard = forwardRef(({ gates, activeGate,ref }) => {
         }
       }
 
-      // Highlight clicked square if any
-      if (clickedSquare) {
+      // Draw yellow outline for hovered square
+      if (hoveredSquare) {
         ctx.strokeStyle = 'yellow';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(
+          hoveredSquare.x * squareSize,
+          hoveredSquare.y * squareSize,
+          squareSize,
+          squareSize
+        );
+      }
+
+
+      // Draw blue outline for clicked square
+      if (clickedSquare) {
+        ctx.strokeStyle = 'blue';
         ctx.lineWidth = 3;
         ctx.strokeRect(
           clickedSquare.x * squareSize,
@@ -94,11 +106,17 @@ const PlayerBoard = forwardRef(({ gates, activeGate,ref }) => {
           squareSize,
           squareSize
         );
+        if(activeGate){
+          console.log(activeGate);
+          board.accessSpace(clickedSquare.y, clickedSquare.x).gates.push(activeGate.type);
+          setClickedSquare(null);       
+          setActiveGate(null);   
+        }
       }
     };
 
     drawGrid();
-  }, [board, size, squareSize, canvasSize, clickedSquare]);
+  }, [board, size, squareSize, canvasSize, hoveredSquare, clickedSquare]);
 
   const handleCanvasClick = (event) => {
     const canvas = canvasRef.current;
@@ -110,54 +128,43 @@ const PlayerBoard = forwardRef(({ gates, activeGate,ref }) => {
     const j = Math.floor(x / squareSize);
     
     setClickedSquare({ x: j, y: i });
+    setBoardInfo({
+      type: 'Clicked',
+      x: j,
+      y: i,
+      gates: board.accessSpace(i, j).gates || []
+    });
 
-    console.log(`Clicked square: (${j}, ${i})`);
-    console.log('Active Gate:', activeGate);
+    
+  };
 
-    if (activeGate) {
-      // Create a copy of the current board's spaces
-      const newBoardSpaces = board.spaces.map((row, rowIndex) => 
-        row.map((space, colIndex) => {
-          if (rowIndex === i && colIndex === j) {
-            // Clone the existing space as an instance of the `space` class
-            const updatedSpace = new Space(space.x, space.y, space.zeroProb, space.oneProb, space.state);
-            
-            // Debug: Output the current gates before modification
-            console.log(`Before Update - Space[${i},${j}] Gates:`, updatedSpace.gates);
+  const handleCanvasHover = (event) => {
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    const i = Math.floor(y / squareSize);
+    const j = Math.floor(x / squareSize);
+    
+    setHoveredSquare({ x: j, y: i });
+    setHoveredGates(board.accessSpace(i, j).gates || []);
+    setHoveredSquare({ x: j, y: i });
 
-            // Add the gate to the existing gates array or create a new one
-            updatedSpace.gates = updatedSpace.gates ? [...updatedSpace.gates, activeGate.type] : ['I', activeGate.type];
+    setBoardInfo({
+      type: 'Hover',
+      x: j,
+      y: i,
+      gates: board.accessSpace(i, j).gates || [],
+      p0: board.accessSpace(i, j).zeroProb,
+      p1: board.accessSpace(i, j).oneProb
+    });
+  };
 
-            // Debug: Output the new gates array after adding the new gate
-            console.log(`After Update - Space[${i},${j}] Gates:`, updatedSpace.gates);
-
-            updatedSpace.updateState();
-
-            // Debug: Output the updated space's state after calling updateState()
-            console.log(`Space[${i},${j}] Updated State:`, updatedSpace.state);
-
-            return updatedSpace;
-          }
-          return space;
-        })
-      );
-
-      // Create a new board instance with the updated spaces
-      const newBoard = new BoardSpaces(size);
-      newBoard.spaces = newBoardSpaces;
-
-      // Debug: Output the new board object before setting state
-      console.log("New Board after modification:", newBoard);
-
-      // Set the new board
-      setBoard(newBoard);
-    }
-};
-
-
-
-
-
+  const handleCanvasLeave = () => {
+    setHoveredSquare(null);
+    setHoveredGates([]);
+    setBoardInfo(null);
+  };
 
   return (
     <div ref={ref}>
@@ -167,27 +174,48 @@ const PlayerBoard = forwardRef(({ gates, activeGate,ref }) => {
           width={canvasSize}
           height={canvasSize}
           onClick={handleCanvasClick}
+          onMouseMove={handleCanvasHover}
+          onMouseLeave={handleCanvasLeave}
           style={{ border: '1px solid black' }}
         />
-        {clickedSquare && (
+        {/* the below prints the information locally */}
+        {/* {clickedSquare && (
           <p>
             Clicked square: ({clickedSquare.x}, {clickedSquare.y})
             <br />
-            Applied Gates: {clickedSquare.gates && clickedSquare.gates.length > 0 
-              ? `(${clickedSquare.gates.join(', ')})`
+            Applied Gates: {board.accessSpace(clickedSquare.y, clickedSquare.x).gates && 
+              board.accessSpace(clickedSquare.y, clickedSquare.x).gates.length > 0 
+              ? `(${board.accessSpace(clickedSquare.y, clickedSquare.x).gates.join(', ')})`
               : '(None)'}
+            <br />
+            Probability:(
+              {board.accessSpace(clickedSquare.y, clickedSquare.x).zeroProb}, 
+              {board.accessSpace(clickedSquare.y, clickedSquare.x).oneProb}
+              )
           </p>
         )}
-    </div>
-
+        {hoveredSquare && (
+          <p>
+            Hovered square: ({hoveredSquare.x}, {hoveredSquare.y})
+            <br />
+            Gates: {hoveredGates.length > 0 ? hoveredGates.join(', ') : 'None'}
+            <br />
+            Probability:(
+              {board.accessSpace(hoveredSquare.y, hoveredSquare.x).zeroProb}, 
+              {board.accessSpace(hoveredSquare.y, hoveredSquare.x).oneProb}
+              )
+          </p>
+        )} */}
+      </div>
     </div>
   );
 });
+
 PlayerBoard.displayName = 'PlayerBoard';
 PlayerBoard.propTypes = {
   gates: PropTypes.bool,
   activeGate: PropTypes.object,
-  ref: PropTypes.object,
+  setActiveGate: PropTypes.func,
+  setBoardInfo: PropTypes.func
 };
-
 export default PlayerBoard;
