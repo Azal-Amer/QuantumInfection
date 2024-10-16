@@ -41,18 +41,57 @@ def twoQubitOp(qc,qubit1,qubit2,op):
     else:
         print("Invalid operation")
 
-def measure(qc,qubit):
+def singleMeasure(qc,qubit):
     qc.measure(qubit,qubit)
     job = backend.run(qc,shots=1)
     results = job.result()
     counts = results.get_counts(qc)
     print(counts)
+    result = list(counts.keys())[0]
+    print(result)
+    print(str(result)[-qubit-1])
+    
+    cellResult = str(result)[-qubit-1]
+    if cellResult == '0':
+        aliceSquares.append(qubit)
+    elif cellResult == '1':
+        bobSquares.append(qubit)
 
-def endGame(qc):
+def endMeasure(qc):
+    measureList = []
     for i in range(36):
         if i not in aliceSquares and i not in bobSquares:
-            measure(qc,i)
+            measureList.append(i)
+    print(measureList)
+    qc.measure(measureList,measureList)
+    job = backend.run(qc,shots=1)
+    results = job.result()
+    counts = results.get_counts(qc)
+    print(counts)
+    return [counts,measureList]
+        
+    
+#runs at the end of the game when a certain number of turns have occured
+def endGame(qc):
+    counts,measureList = endMeasure(qc)
+    result = list(counts.keys())[0]
+    
+    for i in measureList:
+        if result[i]=='0':
+            aliceSquares.append(i)
+        elif result[i]=='1':
+            bobSquares.append(i)
     print("End Game")
+    print("Alice's squares: ",aliceSquares)
+    print("Bob's squares: ",bobSquares)
+    alicePoints = len(aliceSquares)
+    bobPoints = len(bobSquares)
+    if alicePoints>bobPoints:
+        print("Alice wins!")
+    elif bobPoints>alicePoints:
+        print("Bob wins!")
+    else:
+        print("It's a tie!")
 
 if __name__ == "__main__":
     qc = QuantumCircuit(36,36)
@@ -64,6 +103,7 @@ if __name__ == "__main__":
     turn = 0
 
     print("Hi")
+    singleMeasure(qc,5)
     if turn>=0:
         endGame(qc)
 
