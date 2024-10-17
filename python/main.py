@@ -9,13 +9,20 @@ def square_from_qubit(qubit):
     return ((qubit+1)%6-1, (qubit)//6)
 
 def initialize(qc):
+    #initializing the statevector to an all 0 state
     state = Statevector.from_label('0'*16)
+
+    #setting up the quantum circuit to match the starting state of the board
     for i in [1,3,4,7,9,10,13]:
+        #statevector is evolved according to the gate applied, [0] acesses the statevector from the return of gate
+        #statevector is labeled with the 0 square on the right and the 15 square on the left
         state = gate(qc,[i],"H",state)[0]
     for i in [2,5,6,8,11,12,14]:
         state = gate(qc,[i],"X",state)[0]
         state = gate(qc,[i],"H",state)[0]
     state = gate(qc,[15],"X",state)[0]
+
+    #returns the statevector and the probabilities of each outcome
     return [state,probabilities(state)]
 
 #include return of probabilities of each outcome
@@ -23,11 +30,12 @@ def initialize(qc):
 
 
 def gate(qc, qubit, op, state):
+    #create ancilla quantum circuit to evolve the statevector on each turn
     ancqc = QuantumCircuit(16)
     if op == "H":
+        state = Statevector.from_label('0'*16)
         qc.h(qubit[0])
-        ancqc.h(qubit[0])
-        state = state.evolve(ancqc)
+        state = state.evolve(qc)
 
         #print("H gate applied")
     elif op == "X":
@@ -83,33 +91,27 @@ def probabilities(state):
         squareProbabilities.append([i,prob_0,prob_1])
     return squareProbabilities
 
-def singleMeasure(qc,qubit):
-    """Measures a single qubit and returns the result"""
-    qc.measure(qubit,qubit)
-    job = backend.run(qc,shots=1)
-    results = job.result()
-    counts = results.get_counts(qc)
-    print(counts)
-    result = list(counts.keys())[0]
-    print(result)
-    print(str(result)[-qubit-1])
+# def singleMeasure(qc,qubit):
+#     """Measures a single qubit and returns the result"""
+#     qc.measure(qubit,qubit)
+#     job = backend.run(qc,shots=1)
+#     results = job.result()
+#     counts = results.get_counts(qc)
+#     print(counts)
+#     result = list(counts.keys())[0]
+#     print(result)
+#     print(str(result)[-qubit-1])
     
-    cellResult = str(result)[-qubit-1]
-    if cellResult == '0':
-        aliceSquares.append(qubit)
-    elif cellResult == '1':
-        bobSquares.append(qubit)
+#     cellResult = str(result)[-qubit-1]
+#     if cellResult == '0':
+#         aliceSquares.append(qubit)
+#     elif cellResult == '1':
+#         bobSquares.append(qubit)
     
-    return state
-#use qiskit to return new probabilities of the board
+#     return state
 
 def endMeasure(qc):
-    measureList = []
-    for i in range(16):
-        if i not in aliceSquares and i not in bobSquares:
-            # add this to the gate setup
-            measureList.append(i)
-    print(measureList)
+    measureList = list(range(1,15))
     qc.measure(measureList,measureList)
     job = backend.run(qc,shots=1)
     results = job.result()
@@ -124,9 +126,9 @@ def endGame(qc):
     result = list(counts.keys())[0]
     
     for i in measureList:
-        if result[i]=='0':
+        if result[15-i]=='0':
             aliceSquares.append(i)
-        elif result[i]=='1':
+        elif result[15-i]=='1':
             bobSquares.append(i)
     print("End Game")
     print("Alice's squares: ",aliceSquares)
@@ -147,7 +149,7 @@ if __name__ == "__main__":
     aliceSquares = [0]
     bobSquares = [15]  
     #singleMeasure(qc,1)
+    print("")
+    gate(qc,[1],"H",state[0])
     print(probabilities(state[0]))
     endGame(qc)
-
-
