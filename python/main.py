@@ -1,6 +1,6 @@
-from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister
+from qiskit import QuantumCircuit
+from qiskit.quantum_info import Statevector
 from qiskit_aer import Aer
-import numpy as np
 
 def qubit_from_square(column,row):
    return 6*row+column-1
@@ -9,39 +9,53 @@ def square_from_qubit(qubit):
     return ((qubit+1)%6-1, (qubit)//6)
 
 def initialize(qc):
-    for i in [1,2,3,5,6,8,9,11,12,13,15,18,19,21,25,28,31]:
+    for i in [1,3,4,7,9,10,13]:
         qc.h(i)
-    for i in [4,7,10,14,16,17,20,22,23,24,26,27,29,30,32,33,34]:
+        state = Statevector.from_label('0'*16)
+        state = evolve_state_with_gate(state, 'h', [i])
+    for i in [2,5,6,8,11,12,14]:
         qc.x(i)
         qc.h(i)
-    qc.x(35)
+        state = evolve_state_with_gate(state, 'x', [i])
+        state = evolve_state_with_gate(state, 'h', [i])
+    qc.x(15)
+    state = evolve_state_with_gate(state, 'x', [15])
+    return state
 
-def singleQubitOp(qc, qubit, op):
-    turn +=1
+def evolve_state_with_gate(state, gate, qubits):
+    """Evolves the given statevector with the specified gate on the given qubits."""
+    ancqc = QuantumCircuit(16)
+    # Apply the gate to the specified qubits
+    gate_function = getattr(ancqc, gate)  # Get the gate function from the QuantumCircuit class
+    gate_function(*qubits)  # Apply the gate to the specified qubits
+
+    # Evolve the statevector with the applied gate
+    return state.evolve(qc)
+
+
+def gate(qc, qubit, op):
+    #turn +=1
     if op == "H":
-        qc.h(qubit)
+        qc.h(qubit[0])
     elif op == "X":
-        qc.x(qubit)
+        qc.x(qubit[0])
     elif op == "Z":
-        qc.z(qubit)
+        qc.z(qubit[0])
     elif op == "S":
-        qc.s(qubit)
-    else:
-        print("Invalid operation")
-
-def twoQubitOp(qc,qubit1,qubit2,op):
-    turn +=1
+        qc.s(qubit[0])
     if op == "CNOT":
-        #controlling on qubit1, target on qubit2
-        qc.cx(qubit1,qubit2)
+        #controlling on qubit[0], target on qubit[1]
+        qc.cx(qubit[0],qubit[1])
     elif op == "SWAP":
-        qc.swap(qubit1,qubit2)
+        qc.swap(qubit[0],qubit[1])
     elif op == "CZ":
-        qc.cz(qubit1,qubit2)
+        qc.cz(qubit[0],qubit[1])
     else:
         print("Invalid operation")
+#include return of probabilities of each outcome
 
 def singleMeasure(qc,qubit):
+    """Measures a single qubit and returns the result"""
     qc.measure(qubit,qubit)
     job = backend.run(qc,shots=1)
     results = job.result()
@@ -56,11 +70,14 @@ def singleMeasure(qc,qubit):
         aliceSquares.append(qubit)
     elif cellResult == '1':
         bobSquares.append(qubit)
+    return cellResult
+#use qiskit to return new probabilities of the board
 
 def endMeasure(qc):
     measureList = []
-    for i in range(36):
+    for i in range(16):
         if i not in aliceSquares and i not in bobSquares:
+            # add this to the gate setup
             measureList.append(i)
     print(measureList)
     qc.measure(measureList,measureList)
@@ -94,16 +111,16 @@ def endGame(qc):
         print("It's a tie!")
 
 if __name__ == "__main__":
-    qc = QuantumCircuit(36,36)
+    qc = QuantumCircuit(16,16)
     initialize(qc)
     backend = Aer.get_backend('qasm_simulator')
     aliceSquares = [0]
-    bobSquares = [35]
-    aliceTurn = True
-    turn = 0
+    bobSquares = [15]
+    #aliceTurn = True
+    #turn = 0
 
     print("Hi")
     singleMeasure(qc,5)
-    if turn>=0:
-        endGame(qc)
+    singleMeasure(qc,11)
+    endGame(qc)
 
