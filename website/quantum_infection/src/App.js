@@ -5,10 +5,12 @@ import GatePalate from './gatePalate/gatePalate';
 
 function App() {
   const [gates, setGates] = useState(false);
-  console.log(setGates);
   const playerBoardRef = useRef(null);
   const [activeGate, setActiveGate] = useState(null);
   const [boardInfo, setBoardInfo] = useState(null);
+  const [activeGateUses, setActiveGateUses] = useState(0);
+  // The above will keep track of the number of times the 
+  // present gate has been used
 
   return (
     <div className="App">
@@ -20,6 +22,7 @@ function App() {
           alignItems: 'center',
           justifyContent: 'center',
         }}>
+          {/* Refactor to make this in actual CSS elements, please man */}
           <div style={{
             flex: '2',
             display: 'flex',
@@ -39,13 +42,13 @@ function App() {
                 {boardInfo && (
                   <div>
                     <p>
-                      {boardInfo.type} square: ({boardInfo.x}, {boardInfo.y})
+                      {boardInfo.type}: ({boardInfo.x}, {boardInfo.y})
                       <br />
-                      Applied Gates: {boardInfo.gates && boardInfo.gates.length > 0 
-                        ? `(${boardInfo.gates.join(', ')})`
+                      Gates: {boardInfo.gates && boardInfo.gates.length > 0 
+                        ? `(${boardInfo.gates})`
                         : '(None)'}
                         <br />
-                        Probability:(
+                        Probabilities:(
                           {boardInfo.p0}, 
                           {boardInfo.p1}
                           )
@@ -59,6 +62,8 @@ function App() {
                 setActiveGate={setActiveGate} 
                 ref={playerBoardRef}
                 setBoardInfo={setBoardInfo}
+                activeGateUses={activeGateUses}
+                setActiveGateUses={setActiveGateUses}
               />
             </div>
           </div>
@@ -73,6 +78,8 @@ function App() {
               activeGate={activeGate}
               setActiveGate={setActiveGate}
               playerBoardRef={playerBoardRef}
+              activeGateUses={activeGateUses}
+              setActiveGateUses={setActiveGateUses}
             />
           </div>
         </div>

@@ -3,20 +3,42 @@ import PropTypes from 'prop-types';
 import { Gate } from './gate.js';
 
 const defaultGateTypes = [
-  { type: 'X', qty: 1, label: 'X-Gate', color: [0, 0, 255] },
-  { type: 'Y', qty: 1, label: 'Y-Gate', color: [255, 0, 0] },
-  { type: 'Z', qty: 1, label: 'Z-Gate', color: [0, 255, 0] },
-  { type: 'H', qty: 1, label: 'H-Gate', color: [255, 255, 0] },
+  { type: 'X',
+     qty: 1, 
+     label: 'X-Gate', 
+    color: [0, 0, 255],
+    numQubits:3 },
+
+  { type: 'Y', 
+    qty: 1, 
+    label: 'Y-Gate',
+     color: 
+    [255, 0, 0],
+    numQubits:1  },
+  { type: 'Z',
+     qty: 1, 
+     label: 'Z-Gate',
+      color:
+     [0, 255, 0],
+     numQubits:1  },
+  {
+     type: 'H', 
+     qty: 1, 
+     label: 'H-Gate', 
+     color:[255, 255, 0],
+     numQubits:1  },
 ];
 
-const GatePalate = ({ size = 50, gateTypes = defaultGateTypes, activeGate, setActiveGate, playerBoardRef }) => {
+const GatePalate = ({ size = 50, gateTypes = defaultGateTypes, 
+  activeGate, setActiveGate, playerBoardRef,setActiveGateUses }) => {
   const canvasRef = useRef(null);
+  
   const [gates, setGates] = useState([]);
 
   useEffect(() => {
     const newGates = gateTypes.map((gate, index) => {
       const x = 10 + (index * (size + 10));
-      return new Gate(gate.type, gate.qty, gate.label, gate.color, [x, 10], size);
+      return new Gate(gate.type, gate.qty, gate.label, gate.color, [x, 10], size, gate.numQubits);
     });
     setGates(newGates);
   }, [gateTypes, size]);
@@ -41,6 +63,7 @@ const GatePalate = ({ size = 50, gateTypes = defaultGateTypes, activeGate, setAc
       if (canvasRef.current && !canvasRef.current.contains(event.target) &&
           playerBoardRef.current && !playerBoardRef.current.contains(event.target)) {
         setActiveGate(null);
+        setActiveGateUses(0);
       }
     };
 
@@ -57,12 +80,19 @@ const GatePalate = ({ size = 50, gateTypes = defaultGateTypes, activeGate, setAc
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
 
-    const clickedGate = gates.find(gate =>
+    var clickedGate = gates.find(gate =>
       x >= gate.x && x <= gate.x + gate.size &&
       y >= gate.y && y <= gate.y + gate.size
     );
 
+    
+    clickedGate = JSON.parse(JSON.stringify(clickedGate));
+    
+    // makes clickedGate a new instance of the gate. This hopefully
+    // is a deep copy, so the qubits stayed referenced to the original.
     setActiveGate(clickedGate || null);
+    setActiveGateUses(0);
+    // If we click away, then the gate uses are zero
   };
 
   const canvasWidth = gates.length * (size + 10) + 10;
@@ -99,11 +129,13 @@ GatePalate.propTypes = {
       qty: PropTypes.number.isRequired,
       label: PropTypes.string.isRequired,
       color: PropTypes.arrayOf(PropTypes.number).isRequired,
+      
     })
   ),
   activeGate: PropTypes.object,
   setActiveGate: PropTypes.func.isRequired,
   playerBoardRef: PropTypes.object.isRequired,
+  setActiveGateUses: PropTypes.func,
 };
 
 export default GatePalate;

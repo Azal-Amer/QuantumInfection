@@ -1,5 +1,5 @@
 export class Gate {
-    constructor(type, qty, label, color, initialPos, size) {
+    constructor(type, qty, label, color,initialPos, size, numQubits) {
       this.type = type;
       this.qty = qty;
       this.label = label;
@@ -7,7 +7,10 @@ export class Gate {
       this.x = initialPos[0];
       this.y = initialPos[1];
       this.size = size;
+      this.numQubits = numQubits
+      this.qubits = []
     }
+
   
     drawGate(ctx) {
       ctx.fillStyle = `rgb(${this.color[0]}, ${this.color[1]}, ${this.color[2]})`;
@@ -20,3 +23,4 @@ export class Gate {
       ctx.fillText(this.label, this.x + this.size / 2, this.y + this.size / 2);
     }
   }
+  // I don't think I need a multiqubit gate
