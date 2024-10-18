@@ -131,6 +131,7 @@ Then we can call this in specific contexts, it exists as a react hook.
 Next time:
 - [ ] Make the controlNot on each qubit, know what qubits it's attached too
 - [ ] Render the CNOTs
+	- [ ] When selecting gates for multi-qubit, it might be nice to keep the previous states in some color. Also, make sure that when hovering on a square, the hover displays what qubits are targetted and controlled. 
 - [ ] Maybe render the gates themselves
 - [ ] Link into Ayden's code
 ## Python Notes
