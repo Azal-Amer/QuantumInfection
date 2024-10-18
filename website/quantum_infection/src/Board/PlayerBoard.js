@@ -1,7 +1,7 @@
 import React, { forwardRef,useRef, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import {BoardSpaces,Space} from './boardClass'; // Make sure this path is correct
-function customTypeBoard(board, size) {
+function customTypeBoard(board, size,) {
   if (size === 6) {
     const plusSpaces = [
       [0,1],[0,2],[0,3],[0,5],
@@ -44,13 +44,20 @@ function customTypeBoard(board, size) {
   board.accessSpace(size-1,size-1).updateState();
   return board;
 }
-const PlayerBoard = forwardRef(({ gates, activeGate,setActiveGate,setBoardInfo }, ref) => {
+const PlayerBoard = forwardRef(({ gates, activeGate,
+  setActiveGate,setBoardInfo,
+  activeGateUses,setActiveGateUses,showAlert,hideAlert }, ref) => {
   const size = 6; // 6x6 grid
   const canvasRef = useRef(null);
   const [board, setBoard] = useState(() => customTypeBoard(new BoardSpaces(size), size));
+  // The current gameboard setter. the setBoard property will
+  // be useful when Ayden implements the probability returning
   const [hoveredSquare, setHoveredSquare] = useState(null);
+  // Hovered square, self explanatory
   const [clickedSquare, setClickedSquare] = useState(null);
-  const [hoveredGates, setHoveredGates] = useState([]);
+  // Clicked square, self explanatory
+  
+
 
   const canvasSize = 700; // pixels
   const squareSize = canvasSize / size;
@@ -63,6 +70,7 @@ const PlayerBoard = forwardRef(({ gates, activeGate,setActiveGate,setBoardInfo }
       ctx.clearRect(0, 0, canvasSize, canvasSize);
       for (let i = 0; i < size; i++) {
         for (let j = 0; j < size; j++) {
+          
           const space = board.accessSpace(i, j);
           
           // Fill square with its original color
@@ -106,11 +114,36 @@ const PlayerBoard = forwardRef(({ gates, activeGate,setActiveGate,setBoardInfo }
           squareSize,
           squareSize
         );
+        // This below will drop the active gates in. 
+        // It's also where we'd probably make a call to Ayden's interface code
         if(activeGate){
-          console.log(activeGate);
-          board.accessSpace(clickedSquare.y, clickedSquare.x).gates.push(activeGate.type);
-          setClickedSquare(null);       
-          setActiveGate(null);   
+          const square = board.accessSpace(clickedSquare.y, clickedSquare.x)
+          square.gates.push(activeGate);
+          spaceUpdater(board,setBoardInfo,clickedSquare,'Hovered');
+          // updating the square that the gate was dropped on, so that the user doesnt have to move their cursor to update it
+          setClickedSquare(null); 
+          const debug = false;
+          if(debug){ 
+            console.log('Active Gate Uses: ',activeGateUses); 
+            console.log('Active Gate NumQubits: ',activeGate.numQubits);
+          }
+          if(activeGateUses === (activeGate.numQubits-1)){
+            setActiveGate(null); 
+            hideAlert();
+            setActiveGateUses(0);
+            console.log('Active Gate is now null');
+          }
+          
+          else{
+            setActiveGateUses(activeGateUses+1);
+            console.log('Active Gate Uses: ',activeGateUses);
+            showAlert( 'info','Active Gate :'+ activeGate.label, 
+              'You have selected '+(activeGateUses+1)+' / '+activeGate.numQubits+' qubits'+'<br />' + activeGate.description);
+          } 
+             
+          // We need a way to keep track of the number of times an individual gate is used. Then, we can compare it to the 
+          // numQubits propety of the activeGate. If they're equal, then we can set the activeGate to null.
+            
         }
       }
     };
@@ -119,51 +152,57 @@ const PlayerBoard = forwardRef(({ gates, activeGate,setActiveGate,setBoardInfo }
   }, [board, size, squareSize, canvasSize, hoveredSquare, clickedSquare]);
 
   const handleCanvasClick = (event) => {
+    // Below will just check if we clicked on a space on the board, and if so, which one
+    // NOTE TO SELF, this block below repeats 3 times (twice here, once in game palate). We can put this into a function for personal sake.
     const canvas = canvasRef.current;
     const rect = canvas.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
-    
     const i = Math.floor(y / squareSize);
     const j = Math.floor(x / squareSize);
-    
-    setClickedSquare({ x: j, y: i });
-    setBoardInfo({
-      type: 'Clicked',
-      x: j,
-      y: i,
-      gates: board.accessSpace(i, j).gates || []
-    });
+    if((i>=0 && j>=0 )&& (i<size && j<size)){
+      setClickedSquare({ x: j, y: i });
+      spaceUpdater(board,setBoardInfo,board.accessSpace(i, j),'Clicked');
+    }
 
-    
+    // Above then writes the displaying code
   };
-
   const handleCanvasHover = (event) => {
+    // Similar to the click, this checks wh
+    // The error happens because somehow we're letting size 6 come through
     const canvas = canvasRef.current;
     const rect = canvas.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
     const i = Math.floor(y / squareSize);
     const j = Math.floor(x / squareSize);
-    
-    setHoveredSquare({ x: j, y: i });
-    setHoveredGates(board.accessSpace(i, j).gates || []);
-    setHoveredSquare({ x: j, y: i });
 
-    setBoardInfo({
-      type: 'Hover',
-      x: j,
-      y: i,
-      gates: board.accessSpace(i, j).gates || [],
-      p0: board.accessSpace(i, j).zeroProb,
-      p1: board.accessSpace(i, j).oneProb
-    });
+    // console.log(i,j);
+
+    
+    // try and catch block to prevent errors
+    // log i and j
+    
+    if((i>=0 && j>=0 )&& (i<size && j<size)){
+      setHoveredSquare({ x: j, y: i });
+      spaceUpdater(board,setBoardInfo,{x:j,y:i},'Hovered');
+
+    }
   };
 
   const handleCanvasLeave = () => {
     setHoveredSquare(null);
-    setHoveredGates([]);
-    setBoardInfo(null);
+    if(clickedSquare == null){
+      setBoardInfo(null);
+    }
+    else{
+      console.log(clickedSquare);
+  // This will allow us to keep track of what square was clicked
+      spaceUpdater(board,setBoardInfo,clickedSquare,'Clicked');
+
+      // REFACTOR: This code repeats 3 times, 
+    }
+    // setBoardInfo(null);
   };
 
   return (
@@ -216,6 +255,27 @@ PlayerBoard.propTypes = {
   gates: PropTypes.bool,
   activeGate: PropTypes.object,
   setActiveGate: PropTypes.func,
-  setBoardInfo: PropTypes.func
+  setBoardInfo: PropTypes.func,
+  setActiveGateUses: PropTypes.func,
+  showAlert: PropTypes.func.isRequired,
+  hideAlert: PropTypes.func.isRequired,
 };
 export default PlayerBoard;
+function gatesListToLabel(gates,qubits) {
+  // At some point, write this so that
+  return gates.map(gate => gate.label).join(', ');
+}
+function spaceUpdater(board,setBoardInfo,square,label){
+  console.log(square);
+      const listedGates = gatesListToLabel(board.accessSpace(square.y, square.x).gates);
+  // This will allow us to keep track of what square was clicked
+      setBoardInfo({
+        type: label,
+        x: square.x,
+        y: square.y,
+        gates: listedGates || [],
+        p0 : board.accessSpace(square.y, square.x).zeroProb,
+        p1 : board.accessSpace(square.y, square.x).oneProb
+      });
+
+}

@@ -34,7 +34,7 @@ export class Space {
         this.oneProb = oneProb;
         this.state = state;
         this.color = getColorForProbability(this.zeroProb, [0, 0, 255], [255,0,0], 0, 1);
-        this.gates = ["I"];
+        this.gates = [];
     }
     updateState() {
         this.color = getColorForProbability(this.zeroProb, [0, 0, 255], [255,0,0], 0, 1);
@@ -59,6 +59,9 @@ export class BoardSpaces {
         return spaces;
     }
     accessSpace(x,y){
+        // if(x < 0 || x >= this.size-1 || y < 0 || y >= this.size-1){
+        //     console.log("Invalid space access");
+        // }
         return this.spaces[x][y];
     }
 }
