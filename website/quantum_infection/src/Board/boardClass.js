@@ -59,9 +59,9 @@ export class BoardSpaces {
         return spaces;
     }
     accessSpace(x,y){
-        if(x < 0 || x >= this.size-1 || y < 0 || y >= this.size-1){
-            console.log("Invalid space access");
-        }
+        // if(x < 0 || x >= this.size-1 || y < 0 || y >= this.size-1){
+        //     console.log("Invalid space access");
+        // }
         return this.spaces[x][y];
     }
 }

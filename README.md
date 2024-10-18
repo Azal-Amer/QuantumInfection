@@ -93,8 +93,49 @@ Probably for the best that I design it as a visual first, though. To do that, th
 	- Write logic, so that the gate operation holds information regarding the link .In that case, while we push the object to an array, it should be the same object. (This is native in JS)
 
 
+> [!Bug] If we're in the middle of selecting spaces for a multiqubit gate, and then click out, then the gate is still applied. I need to add a conditional to that
 
+### Oct 17th 
+- [ ] Should probably also make a notification element, so that I can add different arbitrary pieces of information
+	- Thinking it takes in a title, a description, and a kind of notice. 
+		- 3 Notices : Errors (temporary),
+		- Descriptive (number of spaces to click)
+		- Debug (any color) 
+Inside the gate descriptive modal, tell the user how many more they need to select before it takes place.
+A way to visualize what gates are on a cell, could be nice
+Also, at the beginning of the game, have a rules tile the player can access
+
+Game-plan on priorities is
+- Implement gate-deselect constraint. You can only de-select if the number of gates required has been applied
+	- Made it so that while you're placing a gate, you're forced into clicking it down fully, you can't click away, or use the other gates to click away.
+	- Could also be nice if the gates that are being multi-applied, are both colored in a box of some color
+	- 
+- Implement CNOT
+	- Once the gate itself is implemented, *make a draw function for it* 
+We can make the colormap with two colors as an interval
+
+Implemented an alertbox for the user to engage with! It takes the form of a `useAlert` function run into an alert shower. The alertShower exists in appjs, and simply needs to be imported to use. There are several alert types, which map to different colors. The alerts support inline latex,
+
+Then we can call this in specific contexts, it exists as a react hook.
+
+
+> [!equation] You're using a BLAHB LAH
+> You need to do blah blah 
+
+#### Recap
+- Did backend work so that multi-controlled gates could be safely handled, and added adaptively (details above)
+- Added an alert/callout system, which hopefully can be developed better as time progresses
+- Redid the layout
+![](assets/Pasted%20image%2020241017203424.png)
+
+Next time:
+- [ ] Make the controlNot on each qubit, know what qubits it's attached too
+- [ ] Render the CNOTs
+- [ ] Maybe render the gates themselves
+- [ ] Link into Ayden's code
 ## Python Notes
+
+
 
 
 ```run-python
@@ -103,3 +144,10 @@ def f(a=4,b=3,c=5,d=1):
 print(f(5,2))
 ```
 
+
+$$
+\begin{pmatrix}
+0 & 1 \\
+1 & 0
+\end{pmatrix}
+$$

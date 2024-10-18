@@ -1,8 +1,7 @@
 import React, { forwardRef,useRef, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import {BoardSpaces,Space} from './boardClass'; // Make sure this path is correct
-
-function customTypeBoard(board, size) {
+function customTypeBoard(board, size,) {
   if (size === 6) {
     const plusSpaces = [
       [0,1],[0,2],[0,3],[0,5],
@@ -47,7 +46,7 @@ function customTypeBoard(board, size) {
 }
 const PlayerBoard = forwardRef(({ gates, activeGate,
   setActiveGate,setBoardInfo,
-  activeGateUses,setActiveGateUses }, ref) => {
+  activeGateUses,setActiveGateUses,showAlert,hideAlert }, ref) => {
   const size = 6; // 6x6 grid
   const canvasRef = useRef(null);
   const [board, setBoard] = useState(() => customTypeBoard(new BoardSpaces(size), size));
@@ -118,7 +117,10 @@ const PlayerBoard = forwardRef(({ gates, activeGate,
         // This below will drop the active gates in. 
         // It's also where we'd probably make a call to Ayden's interface code
         if(activeGate){
-          board.accessSpace(clickedSquare.y, clickedSquare.x).gates.push(activeGate);
+          const square = board.accessSpace(clickedSquare.y, clickedSquare.x)
+          square.gates.push(activeGate);
+          spaceUpdater(board,setBoardInfo,clickedSquare,'Hovered');
+          // updating the square that the gate was dropped on, so that the user doesnt have to move their cursor to update it
           setClickedSquare(null); 
           const debug = false;
           if(debug){ 
@@ -127,10 +129,16 @@ const PlayerBoard = forwardRef(({ gates, activeGate,
           }
           if(activeGateUses === (activeGate.numQubits-1)){
             setActiveGate(null); 
+            hideAlert();
+            setActiveGateUses(0);
+            console.log('Active Gate is now null');
           }
           
           else{
             setActiveGateUses(activeGateUses+1);
+            console.log('Active Gate Uses: ',activeGateUses);
+            showAlert( 'info','Active Gate :'+ activeGate.label, 
+              'You have selected '+(activeGateUses+1)+' / '+activeGate.numQubits+' qubits'+'<br />' + activeGate.description);
           } 
              
           // We need a way to keep track of the number of times an individual gate is used. Then, we can compare it to the 
@@ -152,15 +160,10 @@ const PlayerBoard = forwardRef(({ gates, activeGate,
     const y = event.clientY - rect.top;
     const i = Math.floor(y / squareSize);
     const j = Math.floor(x / squareSize);
-   
-    setClickedSquare({ x: j, y: i });
- // This will allow us to keep track of what square was clicked
-    setBoardInfo({
-      type: 'Clicked',
-      x: j,
-      y: i,
-      gates: gatesListToLabel(board.accessSpace(i, j).gates) || []
-    });
+    if((i>=0 && j>=0 )&& (i<size && j<size)){
+      setClickedSquare({ x: j, y: i });
+      spaceUpdater(board,setBoardInfo,board.accessSpace(i, j),'Clicked');
+    }
 
     // Above then writes the displaying code
   };
@@ -177,32 +180,29 @@ const PlayerBoard = forwardRef(({ gates, activeGate,
     // console.log(i,j);
 
     
-    
-    
-    
     // try and catch block to prevent errors
     // log i and j
     
-    if(i>0 || j>0 || i<=size-1 || j<=size-1){
-      console.log(size)
+    if((i>=0 && j>=0 )&& (i<size && j<size)){
       setHoveredSquare({ x: j, y: i });
-      const listedGates = gatesListToLabel(board.accessSpace(i, j).gates)
-      setBoardInfo({
-        type: 'Hovered',
-        x: j,
-        y: i,
-        gates:  listedGates|| [],
-        p0: board.accessSpace(i, j).zeroProb,
-        p1: board.accessSpace(i, j).oneProb
-      });
-    }
+      spaceUpdater(board,setBoardInfo,{x:j,y:i},'Hovered');
 
-    
+    }
   };
 
   const handleCanvasLeave = () => {
     setHoveredSquare(null);
-    setBoardInfo(null);
+    if(clickedSquare == null){
+      setBoardInfo(null);
+    }
+    else{
+      console.log(clickedSquare);
+  // This will allow us to keep track of what square was clicked
+      spaceUpdater(board,setBoardInfo,clickedSquare,'Clicked');
+
+      // REFACTOR: This code repeats 3 times, 
+    }
+    // setBoardInfo(null);
   };
 
   return (
@@ -257,9 +257,25 @@ PlayerBoard.propTypes = {
   setActiveGate: PropTypes.func,
   setBoardInfo: PropTypes.func,
   setActiveGateUses: PropTypes.func,
+  showAlert: PropTypes.func.isRequired,
+  hideAlert: PropTypes.func.isRequired,
 };
 export default PlayerBoard;
 function gatesListToLabel(gates,qubits) {
   // At some point, write this so that
   return gates.map(gate => gate.label).join(', ');
+}
+function spaceUpdater(board,setBoardInfo,square,label){
+  console.log(square);
+      const listedGates = gatesListToLabel(board.accessSpace(square.y, square.x).gates);
+  // This will allow us to keep track of what square was clicked
+      setBoardInfo({
+        type: label,
+        x: square.x,
+        y: square.y,
+        gates: listedGates || [],
+        p0 : board.accessSpace(square.y, square.x).zeroProb,
+        p1 : board.accessSpace(square.y, square.x).oneProb
+      });
+
 }
