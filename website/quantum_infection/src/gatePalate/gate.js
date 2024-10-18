@@ -23,5 +23,35 @@ export class Gate {
       ctx.textBaseline = 'middle';
       ctx.fillText(this.type, this.x + this.size / 2, this.y + this.size / 2);
     }
+    updateGate(){
+      // for each qubit in the label, add it as _(x,y) to the label
+      this.label = this.type;
+      if(this.numQubits>1){
+        // We dont need a gate label if there is only one qubit
+        this.label+='_{'
+        this.qubits.forEach(qubit => {
+          this.label += `(${qubit.x}, ${qubit.y}),`;
+          // if this is the last qubit, remove the comma
+          if (qubit === this.qubits[this.qubits.length - 1]) {
+            this.label = this.label.slice(0, -1);
+          }
+        });
+        this.label += '}';
+        console.log('Updated label:', this.label);
+      }
+      
+    }
+    clone() {
+      return new Gate(
+        this.type,
+        this.qty,
+        this.label,
+        [...this.color],
+        [this.x, this.y],  // initialPos
+        this.size,
+        this.numQubits,
+        this.description
+      );
+    }
   }
   // I don't think I need a multiqubit gate

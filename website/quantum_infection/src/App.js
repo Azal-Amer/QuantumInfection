@@ -6,8 +6,9 @@ import GatePalate from './gatePalate/gatePalate';
 import { AlertProvider } from './alertBox/AlertContext';
 import  AlertBox  from './alertBox/AlertBox';
 import 'katex/dist/katex.min.css';
+import Latex from 'react-latex';
 function AppContent() {
-  const [gates, setGates] = useState(false);
+  const [gates] = useState(false);
   const playerBoardRef = useRef(null);
   const [activeGate, setActiveGate] = useState(null);
   const [boardInfo, setBoardInfo] = useState(null);
@@ -70,15 +71,15 @@ function AppContent() {
               {boardInfo && (
                 <div>
                   <p>
-                    {boardInfo.type}: ({boardInfo.x}, {boardInfo.y})
+                    {boardInfo.type}: (<Latex>{'$' + boardInfo.x + '$'}</Latex>, <Latex>{'$' + boardInfo.y + '$'}</Latex>)
                     <br />
                     Gates: {boardInfo.gates && boardInfo.gates.length > 0
-                      ? `(${boardInfo.gates})`
+                      ? <Latex>{ boardInfo.gates }</Latex>
                       : '(None)'}
                     <br />
                     Probabilities: (
-                    {boardInfo.p0},
-                    {boardInfo.p1}
+                    <Latex>{'$' + boardInfo.p0 + '$'}</Latex>,
+                    <Latex>{'$' + boardInfo.p1 + '$'}</Latex>
                     )
                   </p>
                 </div>

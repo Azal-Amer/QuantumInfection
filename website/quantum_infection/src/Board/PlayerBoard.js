@@ -1,6 +1,6 @@
-import React, { forwardRef,useRef, useEffect, useState } from 'react';
+import React, { forwardRef,useRef, useEffect, useState,useCallback } from 'react';
 import PropTypes from 'prop-types';
-import {BoardSpaces,Space} from './boardClass'; // Make sure this path is correct
+import {BoardSpaces} from './boardClass'; // Make sure this path is correct
 function customTypeBoard(board, size,) {
   if (size === 6) {
     const plusSpaces = [
@@ -44,12 +44,12 @@ function customTypeBoard(board, size,) {
   board.accessSpace(size-1,size-1).updateState();
   return board;
 }
-const PlayerBoard = forwardRef(({ gates, activeGate,
+const PlayerBoard = forwardRef(({ activeGate,
   setActiveGate,setBoardInfo,
   activeGateUses,setActiveGateUses,showAlert,hideAlert }, ref) => {
   const size = 6; // 6x6 grid
   const canvasRef = useRef(null);
-  const [board, setBoard] = useState(() => customTypeBoard(new BoardSpaces(size), size));
+  const [board] = useState(() => customTypeBoard(new BoardSpaces(size), size));
   // The current gameboard setter. the setBoard property will
   // be useful when Ayden implements the probability returning
   const [hoveredSquare, setHoveredSquare] = useState(null);
@@ -81,6 +81,8 @@ const PlayerBoard = forwardRef(({ gates, activeGate,
           ctx.strokeStyle = 'black';
           ctx.lineWidth = 1;
           ctx.strokeRect(j * squareSize, i * squareSize, squareSize, squareSize);
+          // if the square is in the activeGate.qubits, then give it a thick green border
+          
           
           // Display state in the center of the square
           ctx.fillStyle = 'black';
@@ -90,11 +92,51 @@ const PlayerBoard = forwardRef(({ gates, activeGate,
           ctx.fillText(space.state, (j + 0.5) * squareSize, (i + 0.5) * squareSize);
         }
       }
+      for (let i = 0; i < size; i++) {
+        for (let j = 0; j < size; j++) {
+          if(activeGate && activeGate.qubits.some(qubit => qubit.x === j && qubit.y === i)){
+            // ctx.strokeStyle = 'green';
+            // ctx.lineWidth = 10;
+            // ctx.strokeRect(j * squareSize, i * squareSize, squareSize, squareSize);
+
+            ctx.lineWidth = 3;
+            ctx.strokeRect(j * squareSize, i * squareSize, squareSize, squareSize);
+            ctx.strokeStyle = 'rgba(255, 128, 0, 0.5)';
+
+              ctx.lineWidth = 10; // Reduced line width for visibility
+              ctx.strokeRect(j* squareSize,i* squareSize, squareSize, squareSize);
+              ctx.strokeStyle = 'yellow';
+              ctx.lineWidth = 3;
+              
+              ctx.strokeRect(
+                j * squareSize,
+                i* squareSize,
+                squareSize,
+                squareSize
+              );
+          }
+        }
+      }
 
       // Draw yellow outline for hovered square
       if (hoveredSquare) {
+        // ctx.strokeStyle = 'yellow';
+        // ctx.lineWidth = 3;
+        // ctx.strokeRect(
+        //   hoveredSquare.x * squareSize,
+        //   hoveredSquare.y * squareSize,
+        //   squareSize,
+        //   squareSize
+        // );
+
+        ctx.strokeStyle = 'rgba(255, 128, 0, 0.5)';
+        // make the stroke 50% transparent
+        // ctx.globalAlpha = 0.5;
+        ctx.lineWidth = 4; // Reduced line width for visibility
+        ctx.strokeRect(hoveredSquare.x* squareSize, hoveredSquare.y* squareSize, squareSize, squareSize);
         ctx.strokeStyle = 'yellow';
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 1;
+        
         ctx.strokeRect(
           hoveredSquare.x * squareSize,
           hoveredSquare.y * squareSize,
@@ -102,12 +144,19 @@ const PlayerBoard = forwardRef(({ gates, activeGate,
           squareSize
         );
       }
-
+      
 
       // Draw blue outline for clicked square
       if (clickedSquare) {
-        ctx.strokeStyle = 'blue';
+        
+        ctx.strokeStyle = 'rgba(255, 128, 0, 0.5)';
+        // make the stroke 50% transparent
+        // ctx.globalAlpha = 0.5;
+        ctx.lineWidth = 8; // Reduced line width for visibility
+        ctx.strokeRect(clickedSquare.x* squareSize, clickedSquare.y* squareSize, squareSize, squareSize);
+        ctx.strokeStyle = 'yellow';
         ctx.lineWidth = 3;
+        
         ctx.strokeRect(
           clickedSquare.x * squareSize,
           clickedSquare.y * squareSize,
@@ -127,6 +176,8 @@ const PlayerBoard = forwardRef(({ gates, activeGate,
             console.log('Active Gate Uses: ',activeGateUses); 
             console.log('Active Gate NumQubits: ',activeGate.numQubits);
           }
+          activeGate.qubits.push(clickedSquare);
+          activeGate.updateGate();
           if(activeGateUses === (activeGate.numQubits-1)){
             setActiveGate(null); 
             hideAlert();
@@ -136,8 +187,14 @@ const PlayerBoard = forwardRef(({ gates, activeGate,
           
           else{
             setActiveGateUses(activeGateUses+1);
+            
+            
+
+            
+            console.log(activeGate);
+            
             console.log('Active Gate Uses: ',activeGateUses);
-            showAlert( 'info','Active Gate :'+ activeGate.label, 
+            showAlert( 'info','Active Gate :'+ activeGate.type +'-Gate', 
               'You have selected '+(activeGateUses+1)+' / '+activeGate.numQubits+' qubits'+'<br />' + activeGate.description);
           } 
              
@@ -160,10 +217,25 @@ const PlayerBoard = forwardRef(({ gates, activeGate,
     const y = event.clientY - rect.top;
     const i = Math.floor(y / squareSize);
     const j = Math.floor(x / squareSize);
-    if((i>=0 && j>=0 )&& (i<size && j<size)){
-      setClickedSquare({ x: j, y: i });
-      spaceUpdater(board,setBoardInfo,board.accessSpace(i, j),'Clicked');
+    if(clickedSquare !=null && clickedSquare !=undefined){
+      if(clickedSquare.x === j && clickedSquare.y === i){
+        setClickedSquare(null);
+      }
+      else{
+        if((i>=0 && j>=0 )&& (i<size && j<size)){
+          setClickedSquare({ x: j, y: i });
+          spaceUpdater(board,setBoardInfo,board.accessSpace(i, j),'Clicked');
+        }
+      }
     }
+    else{
+      if((i>=0 && j>=0 )&& (i<size && j<size)){
+        setClickedSquare({ x: j, y: i });
+        spaceUpdater(board,setBoardInfo,board.accessSpace(i, j),'Clicked');
+      }
+    }
+    
+    
 
     // Above then writes the displaying code
   };
@@ -196,7 +268,6 @@ const PlayerBoard = forwardRef(({ gates, activeGate,
       setBoardInfo(null);
     }
     else{
-      console.log(clickedSquare);
   // This will allow us to keep track of what square was clicked
       spaceUpdater(board,setBoardInfo,clickedSquare,'Clicked');
 
@@ -204,6 +275,20 @@ const PlayerBoard = forwardRef(({ gates, activeGate,
     }
     // setBoardInfo(null);
   };
+  const handleOutsideClick = useCallback((event) => {
+    if (canvasRef.current && !canvasRef.current.contains(event.target)) {
+      setClickedSquare(null);
+      setBoardInfo(null);
+    }
+  }, [setBoardInfo]);
+
+  useEffect(() => {
+    document.addEventListener('mousedown', handleOutsideClick);
+
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+    };
+  }, [handleOutsideClick]);
 
   return (
     <div ref={ref}>
@@ -257,17 +342,18 @@ PlayerBoard.propTypes = {
   setActiveGate: PropTypes.func,
   setBoardInfo: PropTypes.func,
   setActiveGateUses: PropTypes.func,
+  activeGateUses: PropTypes.number,
   showAlert: PropTypes.func.isRequired,
   hideAlert: PropTypes.func.isRequired,
 };
 export default PlayerBoard;
-function gatesListToLabel(gates,qubits) {
-  // At some point, write this so that
-  return gates.map(gate => gate.label).join(', ');
+function gatesListToLabel(gates) {
+  const result = gates.map(gate => `$${gate.label}$`).join(', ');
+  return result;
 }
 function spaceUpdater(board,setBoardInfo,square,label){
-  console.log(square);
       const listedGates = gatesListToLabel(board.accessSpace(square.y, square.x).gates);
+      
   // This will allow us to keep track of what square was clicked
       setBoardInfo({
         type: label,

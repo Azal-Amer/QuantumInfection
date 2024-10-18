@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import Latex from 'react-latex';
 import 'katex/dist/katex.min.css';
 
-const AlertBox = ({ title, message, type, onClose }) => {
+const AlertBox = ({ title, message, type }) => {
   const alertColors = {
     success: 'rgba(76, 175, 80, 0.9)',
     warning: 'rgba(255, 152, 0, 0.9)',
@@ -48,7 +48,6 @@ AlertBox.propTypes = {
   title: PropTypes.string.isRequired,
   message: PropTypes.string.isRequired,
   type: PropTypes.oneOf(['success', 'warning', 'error', 'info']),
-  onClose: PropTypes.func.isRequired
 };
 
 AlertBox.defaultProps = {
