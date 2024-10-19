@@ -1,9 +1,12 @@
 import React, { forwardRef,useRef, useEffect, useState,useCallback } from 'react';
 import PropTypes from 'prop-types';
 import {BoardSpaces} from './boardClass'; // Make sure this path is correct
+import {boardUpdater,serverBoardInitializer} from './boardUpdater'; // Make sure this path is correct
 function customTypeBoard(board, size,) {
+  var minusSpaces= [];
+  var plusSpaces = [];
   if (size === 6) {
-    const plusSpaces = [
+    plusSpaces = [
       [0,1],[0,2],[0,3],[0,5],
       [1,0],[1,2],[1,3],[1,5],
       [2,0],[2,1],[2,3],
@@ -12,7 +15,7 @@ function customTypeBoard(board, size,) {
       [5,1]
     ];
     
-    const minusSpaces = [
+    minusSpaces = [
       [0,4],
       [1,1],[1,4],
       [2,2],[2,4],[2,5],
@@ -20,7 +23,26 @@ function customTypeBoard(board, size,) {
       [4,0],[4,2],[4,3],[4,5],
       [5,0],[5,3],[5,4]
     ];
-
+    
+    
+  }
+  else if(size === 4){
+    plusSpaces = [
+      [1,0],[2,0],
+      [0,1],[3,1],
+      [1,2],[2,2],
+      [0,3]
+    ];
+    minusSpaces=[
+        [3,0],
+        [1,1],[2,1],
+        [0,2],[3,2],
+        [1,3],[2,3]
+    ]
+  }
+  console.log('Minus Spaces: ',minusSpaces);
+    serverBoardInitializer(plusSpaces,minusSpaces);
+  if(minusSpaces){
     for(let i = 0; i < plusSpaces.length; i++){
       board.accessSpace(plusSpaces[i][1],plusSpaces[i][0]).zeroProb = .5;
       board.accessSpace(plusSpaces[i][1],plusSpaces[i][0]).oneProb = .5;
@@ -34,6 +56,7 @@ function customTypeBoard(board, size,) {
       board.accessSpace(minusSpaces[i][1],minusSpaces[i][0]).updateState();
     }
   }
+  
   board.accessSpace(0,0).zeroProb = 1;
   board.accessSpace(0,0).oneProb = 0;
   board.accessSpace(0,0).state = 'H';
@@ -48,9 +71,9 @@ const PlayerBoard = forwardRef(({ activeGate,
   setActiveGate,setBoardInfo,
   activeGateUses,setActiveGateUses,showAlert,
   hideAlert,placedGates,setPlacedGates }, ref) => {
-  const size = 6; // 6x6 grid
+  const size = 4; // 6x6 grid
   const canvasRef = useRef(null);
-  const [board] = useState(() => customTypeBoard(new BoardSpaces(size), size));
+  const [board,setBoard] = useState(() => customTypeBoard(new BoardSpaces(size), size));
   // The current gameboard setter. the setBoard property will
   // be useful when Ayden implements the probability returning
   const [hoveredSquare, setHoveredSquare] = useState(null);
@@ -119,9 +142,9 @@ const PlayerBoard = forwardRef(({ activeGate,
         }
       }
       for(let i=0; i<placedGates.length; i++){
-        console.log('Placed Gates: ',placedGates[i].color);
+        // console.log('Placed Gates: ',placedGates[i].color);
         const gateColor = currentGateColor((placedGates.length-i),placedGates[i].color)
-        console.log('Gate Color: ',gateColor);
+        // console.log('Gate Color: ',gateColor);
         if(placedGates[i].numQubits>1){
           // This runs for the CNOT qubist
           const controlQubit = placedGates[i].qubits[0];
@@ -254,6 +277,13 @@ const PlayerBoard = forwardRef(({ activeGate,
 
           const square = board.accessSpace(clickedSquare.y, clickedSquare.x)
           square.gates.push(activeGate);
+          if(activeGate.numQubits==1){
+            boardUpdater(board,setBoard,activeGate);
+            if(activeGate.originalGate.qty!=null){
+              // If it's a single qubit gate with fixed quantities, then we need to decrement it as well
+              activeGate.originalGate.qty -=1;
+            }
+          }
           setPlacedGates([...placedGates,activeGate]);
           spaceUpdater(board,setBoardInfo,clickedSquare,'Hovered');
           // updating the square that the gate was dropped on, so that the user doesnt have to move their cursor to update it
@@ -269,12 +299,19 @@ const PlayerBoard = forwardRef(({ activeGate,
             setActiveGate(null); 
             hideAlert();
             setActiveGateUses(0);
+            boardUpdater(board,setBoard,activeGate);
+            board.update()
             console.log('Active Gate is now null');
           }
           
           else{
             setActiveGateUses(activeGateUses+1);
-            console.log(activeGate);
+            activeGate.originalGate.qty -=1;
+            if(activeGate.originalGate.qty === 0){
+              console.log("You're now out of this gate")
+            }
+            // I need to find a way to modify the original gate object, instead of the clone.
+            // console.log(activeGate);
             
             console.log('Active Gate Uses: ',activeGateUses);
             showAlert( 'info','Active Gate :'+ activeGate.type +'-Gate', 
@@ -481,7 +518,7 @@ function cnotConnector(ctx, newPosX, newPosY, gateColor) {
   // get the alpha from gatecolor
   var alpha = parseFloat(gateColor.slice(-4, -1));
 
-  console.log('Alpha:', alpha);
+  // console.log('Alpha:', alpha);
   if(alpha<1){
     alpha = 0;
   }

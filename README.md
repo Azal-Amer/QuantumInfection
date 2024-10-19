@@ -140,8 +140,32 @@ Implemented gate visualizations, rendered CNOTs, and also added UI styling to pr
 
 **Next Time**
 - [ ] Link to Ayden's Code
-- [ ] Implement system for fixed number of gates.
-	- [ ] Add visualization for this
+- [x] Implement system for fixed number of gates.
+	- [x] Add visualization for this
+### October 19th
+- [x] Implementing quantity of gates
+	- Each time a gate is used, and it has a fixed number of possible uses, then if it's the active gate, decrement the global type by 1.
+- [x] Write code to initialize main board to the new square quantity, make sure the same occurs in the python
+	- [x] The interfacing should occur from the site, into the IBM. That way both of them stay synced for different patterns. For the 4x4, I'm thinking
+
+| $\ket{0}$ | $\ket{+}$ | $\ket{+}$ | $\ket{-}$ |
+| --------- | --------- | --------- | --------- |
+| $\ket{+}$ | $\ket{-}$ | $\ket{-}$ | $\ket{+}$ |
+| $\ket{-}$ | $\ket{+}$ | $\ket{+}$ | $\ket{-}$ |
+| $\ket{+}$ | $\ket{-}$ | $\ket{-}$ | $\ket{1}$ |
+Form the $\ket{-}$ by $XH$
+Form the $\ket{+}$ through $H$
+
+- [x] Write interfacing code 
+Guide to setup:
+- Install flask on yor python installation, and run the file located at `./python/webserver.py`
+- Start the node server, and you should be interfacing. Below are known bugs
+
+> [!Bug] Bugs
+> - [ ] Tile Updating only on Mouse move
+> - [ ] Not implemented measurement operator yet
+> - [ ] Window resizing is broken
+
 ## Python Notes
 
 

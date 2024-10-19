@@ -4,8 +4,9 @@ import { Gate } from './gate.js';
 
 const defaultGateTypes = [
   { type: 'X',
-     qty: 1, 
+     qty: null, 
      label: 'X', 
+     kind: 'X',
     color: [0, 0, 255],
     numQubits:1 ,
     description : "The X gate will flip any state, amplitudes on zero go to one, and vice versa."+
@@ -13,16 +14,18 @@ const defaultGateTypes = [
   },
 
   { type: 'Y', 
-    qty: 1, 
+    qty: null, 
     label: 'Y',
+    kind: 'Y',
      color: 
     [255, 0, 0],
     description : "The Y gate will rotate your state 90 degrees around the Y axis, providing a phase shift"+
     "  <br />$$Y = \\begin{pmatrix}0 & -i \\\\i & 0\\end{pmatrix}$$",
     numQubits:1  },
   { type: 'Z',
-     qty: 1, 
+     qty: null, 
      label: 'Z',
+     kind: 'Z',
       color:
      [0, 255, 0],
      description : "The Z gate will throw a -1 on your 1 state, and leave your 0 state alone"+
@@ -30,28 +33,52 @@ const defaultGateTypes = [
      numQubits:1  },
   {
      type: 'H', 
-     qty: 1, 
+     qty: null, 
      label: 'H', 
      color:[255, 255, 0],
      numQubits:1,
      description : "The Hadamard gate will rotate your state 45 degrees"+
      " <br />$$H = \\frac{1}{\\sqrt{2}} \\begin{pmatrix}1 & 1 \\\\1 & -1\\end{pmatrix}$$"  },
-     {
-      type: 'Cx',
-      qty: 1,
-      label: 'CNOT',
+     {type: 'CNOT',
+      qty: 10,
+      label: 'Cx',
+      kind: 'CNOT',
       color: [0, 255, 255],  // Cyan color
       numQubits: 2,  // CNOT operates on 2 qubits
       description: "The CNOT (Controlled-NOT) gate flips the target qubit if the control qubit is |1⟩. It's a two-qubit gate essential for entanglement." +
         " <br />$$CNOT = \\begin{pmatrix}1 & 0 & 0 & 0 \\\\0 & 1 & 0 & 0 \\\\0 & 0 & 0 & 1 \\\\0 & 0 & 1 & 0\\end{pmatrix}$$"
+    },
+    {type : 'M',
+      qty:5,
+      label:'Measure',
+      kind: 'M',
+      color:[255,0,255],
+      numQubits:1,
+      description : "The measurement operator is a final move. Using it on a state collapses it, and in this game prevents more qubits from being added"
+    },
+    {type : 'T',
+      qty:null,
+      label:'T',
+      kind: 'T',
+      color:[255,128,0],
+      numQubits:1,
+      description:"The T gate is apart of the Clifford Set. It is needed to access any possible Unitary."+
+      "<br />$$T = \\begin{pmatrix}1 & 0 \\\\0 & e^{i\\pi/4}\\end{pmatrix}$$",
+    },
+    {type : 'S',
+      qty:null,
+      label:'S',
+      kind: 'S',
+      color:[255,0,128],
+      numQubits:1,
+      description:"The S gate is apart of the Clifford Set. It is needed to access any possible Unitary."+
+      "<br />$$T = \\begin{pmatrix}1 & 0 \\\\0 & i\\end{pmatrix}$$",
     }
 ];
 const GatePalate = ({ size = 100, gateTypes = defaultGateTypes, 
   activeGate, setActiveGate, playerBoardRef,activeGateUses,
   setActiveGateUses,showAlert,hideAlert }) => {
   const canvasRef = useRef(null);
-
-
   
   const [gates, setGates] = useState([]);
   // This effect will create the gates
@@ -71,7 +98,9 @@ const GatePalate = ({ size = 100, gateTypes = defaultGateTypes,
       const col = index % gatesPerRow;
       const x = 10 + (col * (size + 10));
       const y = 10 + (row * (size + 10));
-      return new Gate(gate.type, gate.qty, gate.label, gate.color, [x, y], size, gate.numQubits, gate.description);
+      const newGate = new Gate(gate.type, gate.qty, gate.label, gate.color, [x, y], size, gate.numQubits,gate.description);
+      newGate.kind = gate.kind;
+      return newGate;
     });
     setGates(newGates);
   }, [gateTypes, size]);
@@ -147,8 +176,12 @@ const GatePalate = ({ size = 100, gateTypes = defaultGateTypes,
 
       // Makes clickedGate a new instance of the gate.
       // This hopefully is a deep copy, so the qubits stay referenced to the original.
-      
-      if (noActiveGate) {
+      const clickedGateCondition = activeGateUses === 0 || activeGateUses === activeGate.numQubits;
+      // If we click away before we put a gate down,
+        // we can choose another gate, but if not,
+        // don't let the user change the gate unless all uses are exhausted
+      const validQty = clickedGate.qty !== null ? clickedGate.qty > 0 : true
+      if ((noActiveGate ||clickedGateCondition)&&validQty) {
         // No active gate, so we can select the clicked gate
         if (process.env.NODE_ENV === 'development') {
           const newClickedGate = clickedGate.clone()
@@ -161,23 +194,6 @@ const GatePalate = ({ size = 100, gateTypes = defaultGateTypes,
           console.log('Active Gate:', newClickedGate.label);
         }
         
-      } else if (activeGateUses === 0 || activeGateUses === activeGate.numQubits ) {
-        // If we click away before we put a gate down,
-        // we can choose another gate, but if not,
-        // don't let the user change the gate unless all uses are exhausted
-        const newClickedGate = clickedGate.clone()
-        setActiveGate(newClickedGate);
-        setActiveGateUses(0);
-        showAlert( 'info','Active Gate :'+ newClickedGate.label +'-Gate', 
-          'You have selected '+activeGateUses+' / '+newClickedGate.numQubits+' qubits'+'<br />' + newClickedGate.description);
-        if (process.env.NODE_ENV === 'development') {
-          console.log('Active Gate:', activeGate.label);
-          console.log('Active Gate Uses:', activeGateUses);
-          console.log('Active Gate NumQubits:', activeGate.numQubits);
-          console.log('New Active Gate:', newClickedGate.label);
-        }
-        // setActiveGate(newClickedGate);
-        // setActiveGateUses(0);
       }
       // If we click away, then the gate uses are zero
     }

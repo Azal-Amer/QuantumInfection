@@ -1,0 +1,116 @@
+.instructions-popup-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(40, 44, 52, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    z-index: 1000;
+    opacity: 1;
+    transition: opacity 0.2s ease-out;
+  }
+  
+  .instructions-popup-overlay.closing {
+    opacity: 0;
+  }
+  
+  .instructions-popup-content {
+    background-color: #282c34;
+    border-radius: 0.5rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    width: 90%;
+    max-width: 800px;
+    height: 90vh;
+    display: flex;
+    flex-direction: column;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+      sans-serif;
+    font-size: calc(10px + 1vmin);
+    color: white;
+    line-height: 1.6;
+    transform: scale(1);
+    transition: transform 0.2s ease-out;
+  }
+  
+  .instructions-popup-overlay.closing .instructions-popup-content {
+    transform: scale(0.95);
+  }
+  
+  .instructions-popup-header {
+    background-color: #61dafb;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid #4fa8d5;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .instructions-popup-title {
+    font-size: calc(12px + 2vmin);
+    font-weight: bold;
+    margin: 0;
+    color: #282c34;
+  }
+  
+  .instructions-popup-close-button {
+    background: none;
+    border: none;
+    font-size: calc(12px + 2vmin);
+    cursor: pointer;
+    color: #282c34;
+  }
+  
+  .instructions-popup-close-button:hover {
+    color: #1a1c21;
+  }
+  
+  .instructions-popup-body {
+    padding: 1.5rem;
+    flex-grow: 1;
+    overflow-y: auto;
+    text-align: left;
+  }
+  
+  .instructions-popup-section {
+    margin-bottom: 1.5rem;
+  }
+  
+  .instructions-popup-section-title {
+    font-size: calc(12px + 1.5vmin);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #61dafb;
+  }
+  
+  .instructions-popup-section-content {
+    color: white;
+    font-size: calc(10px + 1vmin);
+    max-width: 100%;
+    word-wrap: break-word;
+  }
+  
+  .instructions-popup-toggle {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    background-color: #61dafb;
+    color: #282c34;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.2s;
+    border: none;
+  }
+  
+  .instructions-popup-toggle:hover {
+    background-color: #4fa8d5;
+  }

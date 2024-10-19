@@ -11,7 +11,6 @@ function interpolateColor(color1, color2, factor) {
 export function getColorForProbability(probability, color1, color2, prob1, prob2) {
     // probability is the probability of the state being zero, color1 is the color you'd map to on one end, color 2 is the 
     // probability on the other, and prob1 and prob2 are the threshholds to trigger hitting the maxima
-
     // Ensure probability is within bounds
     probability = Math.max(Math.min(probability, 1), 0);
     
@@ -63,6 +62,36 @@ export class BoardSpaces {
         //     console.log("Invalid space access");
         // }
         return this.spaces[x][y];
+    }
+    updateProbabilities(probabilities){
+        console.log("Updating probabilities",probabilities);
+        // Update the probabilities of each space
+        // probabilities is a 1d array, size*size long, want to update the zeroProb and oneProb of each space 
+        // in the board
+        for(let i = 0; i < this.size; i++){
+            for(let j = 0; j < this.size; j++){
+                const index = i*this.size + j;
+                console.log('map');
+                console.log(index);
+                console.log('i',i);
+                console.log('j',j);
+                this.spaces[i][j].zeroProb = parseFloat(probabilities[index][1].toFixed(3));
+                // console.log(probabilities[index][1],probabilities[index][2]);
+                this.spaces[i][j].oneProb =  parseFloat(probabilities[index][2].toFixed(3));
+                
+            }
+            
+        }
+        this.update();
+
+        
+    }
+    update(){
+        for(let i = 0; i < this.size; i++){
+            for(let j = 0; j < this.size; j++){
+                this.spaces[i][j].updateState();
+            }
+        }
     }
 }
 // export default BoardSpaces,space;
