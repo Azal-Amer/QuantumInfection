@@ -129,11 +129,19 @@ Then we can call this in specific contexts, it exists as a react hook.
 ![](assets/Pasted%20image%2020241017203424.png)
 
 Next time:
-- [ ] Make the controlNot on each qubit, know what qubits it's attached too
-- [ ] Render the CNOTs
-	- [ ] When selecting gates for multi-qubit, it might be nice to keep the previous states in some color. Also, make sure that when hovering on a square, the hover displays what qubits are targetted and controlled. 
-- [ ] Maybe render the gates themselves
+- [x] Make the controlNot on each qubit, know what qubits it's attached too
+- [x] Render the CNOTs
+	- [x] When selecting gates for multi-qubit, it might be nice to keep the previous states in some color. Also, make sure that when hovering on a square, the hover displays what qubits are targetted and controlled. 
+- [x] Maybe render the gates themselves
 - [ ] Link into Ayden's code
+
+### October 18th
+Implemented gate visualizations, rendered CNOTs, and also added UI styling to prevent jittering.
+
+**Next Time**
+- [ ] Link to Ayden's Code
+- [ ] Implement system for fixed number of gates.
+	- [ ] Add visualization for this
 ## Python Notes
 
 

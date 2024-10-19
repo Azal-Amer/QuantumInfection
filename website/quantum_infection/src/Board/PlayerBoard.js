@@ -46,7 +46,8 @@ function customTypeBoard(board, size,) {
 }
 const PlayerBoard = forwardRef(({ activeGate,
   setActiveGate,setBoardInfo,
-  activeGateUses,setActiveGateUses,showAlert,hideAlert }, ref) => {
+  activeGateUses,setActiveGateUses,showAlert,
+  hideAlert,placedGates,setPlacedGates }, ref) => {
   const size = 6; // 6x6 grid
   const canvasRef = useRef(null);
   const [board] = useState(() => customTypeBoard(new BoardSpaces(size), size));
@@ -117,17 +118,87 @@ const PlayerBoard = forwardRef(({ activeGate,
           }
         }
       }
+      for(let i=0; i<placedGates.length; i++){
+        console.log('Placed Gates: ',placedGates[i].color);
+        const gateColor = currentGateColor((placedGates.length-i),placedGates[i].color)
+        console.log('Gate Color: ',gateColor);
+        if(placedGates[i].numQubits>1){
+          // This runs for the CNOT qubist
+          const controlQubit = placedGates[i].qubits[0];
+          
+          ctx.fillStyle = gateColor;
+          ctx.beginPath();
+          ctx.arc(controlQubit.x * squareSize + squareSize/2, 
+            controlQubit.y * squareSize + squareSize/2, 10, 0, 2 * Math.PI);
+          ctx.fill();
+          if(placedGates[i].qubits.length>1){
+            const targetQubit = placedGates[i].qubits[1];
+            // make a line to the second qubit
+            ctx.strokeStyle = gateColor;
+            ctx.lineWidth = 5;
+            ctx.beginPath();
+            ctx.moveTo(controlQubit.x * squareSize + squareSize/2, 
+              controlQubit.y * squareSize + squareSize/2);
+            cnotConnector(ctx,targetQubit.x * squareSize + squareSize/2,
+              targetQubit.y * squareSize + squareSize/2,gateColor);
+          }
+          else{
+            // make a line to the mouse
+            ctx.strokeStyle = gateColor;
+            ctx.lineWidth = 5;
+            ctx.beginPath();
+            ctx.moveTo(controlQubit.x * squareSize + squareSize/2, 
+              controlQubit.y * squareSize + squareSize/2);
+            if(hoveredSquare){
+              cnotConnector(ctx,hoveredSquare.x * squareSize + squareSize/2,
+                hoveredSquare.y * squareSize + squareSize/2,
+                gateColor);
+            }
+            else{
+              //find the nearest square to the cursor, and put it there
+              const x = Math.floor((ctx.clientX - ctx.rect.left) / squareSize);
+              const y = Math.floor((ctx.clientY - ctx.rect.top) / squareSize);
+
+              cnotConnector(ctx,x * squareSize + squareSize/2,y * squareSize + squareSize/2,gateColor);
+            }
+            
+          }
+        }
+        else{
+          // This is for all the single qubits
+          const qubit = placedGates[i].qubits[0];
+
+
+          const label = placedGates[i].label || '';
+
+          // Draw the circle
+          ctx.fillStyle = gateColor;
+
+          ctx.beginPath();
+          ctx.arc(qubit.x * squareSize + squareSize/2, 
+                  qubit.y * squareSize + squareSize/2, 
+                  20, 0, 2 * Math.PI);
+          ctx.fill();
+
+          // Add the label
+          // make the fillstyle black with the same alpha as the gate color
+          const alpha = parseFloat(gateColor.slice(-4, -1));
+          ctx.fillStyle = `rgba(0,0,0,${alpha})`; // Color of the text
+          ctx.font = '16px Arial'; // Adjust font size and style as needed
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(label, 
+                      qubit.x * squareSize + squareSize/2, 
+                      qubit.y * squareSize + squareSize/2);
+
+
+        }
+        
+      }
 
       // Draw yellow outline for hovered square
       if (hoveredSquare) {
-        // ctx.strokeStyle = 'yellow';
-        // ctx.lineWidth = 3;
-        // ctx.strokeRect(
-        //   hoveredSquare.x * squareSize,
-        //   hoveredSquare.y * squareSize,
-        //   squareSize,
-        //   squareSize
-        // );
+
 
         ctx.strokeStyle = 'rgba(255, 128, 0, 0.5)';
         // make the stroke 50% transparent
@@ -165,9 +236,25 @@ const PlayerBoard = forwardRef(({ activeGate,
         );
         // This below will drop the active gates in. 
         // It's also where we'd probably make a call to Ayden's interface code
+        var safeToTake = true;
+        // this below condition decides if
+        //  it's safe to allow a qubit to be clicked on
+        // In the future, we'd probably use this 
+        // to also constrain multi-qubit distance, and initial clicks based on
+        // adjacent probabilities
         if(activeGate){
+          if(activeGate.qubits.length >0){
+            if(activeGate.qubits[0].x === clickedSquare.x && activeGate.qubits[0].y === clickedSquare.y){
+              safeToTake = false;
+            }
+          }
+        }
+
+        if(activeGate&&safeToTake){
+
           const square = board.accessSpace(clickedSquare.y, clickedSquare.x)
           square.gates.push(activeGate);
+          setPlacedGates([...placedGates,activeGate]);
           spaceUpdater(board,setBoardInfo,clickedSquare,'Hovered');
           // updating the square that the gate was dropped on, so that the user doesnt have to move their cursor to update it
           setClickedSquare(null); 
@@ -187,10 +274,6 @@ const PlayerBoard = forwardRef(({ activeGate,
           
           else{
             setActiveGateUses(activeGateUses+1);
-            
-            
-
-            
             console.log(activeGate);
             
             console.log('Active Gate Uses: ',activeGateUses);
@@ -224,14 +307,14 @@ const PlayerBoard = forwardRef(({ activeGate,
       else{
         if((i>=0 && j>=0 )&& (i<size && j<size)){
           setClickedSquare({ x: j, y: i });
-          spaceUpdater(board,setBoardInfo,board.accessSpace(i, j),'Clicked');
+          spaceUpdater(board,setBoardInfo,board.accessSpace(j, i),'Clicked');
         }
       }
     }
     else{
       if((i>=0 && j>=0 )&& (i<size && j<size)){
         setClickedSquare({ x: j, y: i });
-        spaceUpdater(board,setBoardInfo,board.accessSpace(i, j),'Clicked');
+        spaceUpdater(board,setBoardInfo,board.accessSpace(j, i),'Clicked');
       }
     }
     
@@ -345,6 +428,8 @@ PlayerBoard.propTypes = {
   activeGateUses: PropTypes.number,
   showAlert: PropTypes.func.isRequired,
   hideAlert: PropTypes.func.isRequired,
+  placedGates: PropTypes.array,
+  setPlacedGates: PropTypes.func
 };
 export default PlayerBoard;
 function gatesListToLabel(gates) {
@@ -364,4 +449,52 @@ function spaceUpdater(board,setBoardInfo,square,label){
         p1 : board.accessSpace(square.y, square.x).oneProb
       });
 
+}
+function currentGateColor(distance, color) {
+    if (distance > 10) {
+        distance = 10;
+    }
+
+    const saturation = .9 - (distance / 20); // Starts at 0.5, decreases to 0
+    const alpha = (1 - (distance / 10))**3; // Starts at 0.5, decreases to 0
+
+    const r = Math.round(color[0] * saturation + (255 * (1 - saturation)));
+    const g = Math.round(color[1] * saturation + (255 * (1 - saturation)));
+    const b = Math.round(color[2] * saturation + (255 * (1 - saturation)));
+
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+function cnotConnector(ctx, newPosX, newPosY, gateColor) {
+  // Draw the line
+  ctx.strokeStyle = gateColor;
+  ctx.lineTo(newPosX, newPosY);
+  ctx.stroke();
+
+  // Draw the circle
+  ctx.fillStyle = gateColor;
+  ctx.beginPath();
+  ctx.arc(newPosX, newPosY, 20, 0, 2 * Math.PI);
+  ctx.fill();
+
+  // Draw the cross
+  // get the alpha from gatecolor
+  var alpha = parseFloat(gateColor.slice(-4, -1));
+
+  console.log('Alpha:', alpha);
+  if(alpha<1){
+    alpha = 0;
+  }
+  ctx.strokeStyle = `rgba(${0}, ${0}, ${0}, ${alpha})`;  // Color of the cross
+  ctx.lineWidth = 2;  // Width of the cross lines
+  const crossSize = 10;  // Size of the cross
+
+  ctx.beginPath();
+  // Horizontal line
+  ctx.moveTo(newPosX - crossSize, newPosY);
+  ctx.lineTo(newPosX + crossSize, newPosY);
+  // Vertical line
+  ctx.moveTo(newPosX, newPosY - crossSize);
+  ctx.lineTo(newPosX, newPosY + crossSize);
+  ctx.stroke();
 }

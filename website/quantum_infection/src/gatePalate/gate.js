@@ -29,13 +29,23 @@ export class Gate {
       if(this.numQubits>1){
         // We dont need a gate label if there is only one qubit
         this.label+='_{'
-        this.qubits.forEach(qubit => {
-          this.label += `(${qubit.x}, ${qubit.y}),`;
-          // if this is the last qubit, remove the comma
-          if (qubit === this.qubits[this.qubits.length - 1]) {
-            this.label = this.label.slice(0, -1);
+        // this.qubits.forEach(qubit => {
+        //   this.label += `(${qubit.x}, ${qubit.y}),`;
+        //   // if this is the last qubit, remove the comma
+        //   if (qubit === this.qubits[this.qubits.length - 1]) {
+        //     this.label = this.label.slice(0, -1);
+        //   }
+        // });
+        for (let i =0 ; i <= this.qubits.length - 1; i++) {
+          const qubit = this.qubits[i];
+          if (i === this.qubits.length - 1) {
+              // This is the first (last) qubit, so just add it without a comma
+              this.label += `,(${qubit.x},${qubit.y})`;
+          } else {
+              // For all other qubits, add a comma before
+              this.label = `${this.label}(${qubit.x},${qubit.y}) `;
           }
-        });
+      }
         this.label += '}';
         console.log('Updated label:', this.label);
       }
