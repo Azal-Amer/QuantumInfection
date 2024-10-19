@@ -14,6 +14,7 @@ function AppContent() {
   const [boardInfo, setBoardInfo] = useState(null);
   const [activeGateUses, setActiveGateUses] = useState(0);
   const [alert, setAlert] = useState({ show: false, type: '', title: '', message: '' });
+  const [placedGates, setPlacedGates] = useState([]);
   const showAlert = (type, title, message) => {
     setAlert({ show: true, type, title, message });
   };
@@ -29,9 +30,7 @@ function AppContent() {
         <div className="layout-container">
           <div className="left-container">
             <div className="board-wrapper">
-              <div className="board-info">
-                
-              </div>
+  
               <PlayerBoard
                 gates={gates}
                 activeGate={activeGate}
@@ -42,6 +41,8 @@ function AppContent() {
                 setActiveGateUses={setActiveGateUses}
                 showAlert={showAlert}
                 hideAlert={hideAlert}
+                placedGates={placedGates}
+                setPlacedGates={setPlacedGates}
               />
             </div>
           </div>

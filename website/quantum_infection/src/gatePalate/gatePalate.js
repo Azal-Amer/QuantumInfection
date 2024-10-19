@@ -55,10 +55,23 @@ const GatePalate = ({ size = 100, gateTypes = defaultGateTypes,
   
   const [gates, setGates] = useState([]);
   // This effect will create the gates
+
+  // useEffect(() => {
+  //   const newGates = gateTypes.map((gate, index) => {
+  //     const x = 10 + (index * (size + 10));
+  //     return new Gate(gate.type, gate.qty, gate.label, gate.color, [x, 10], size, gate.numQubits,gate.description);
+  //   });
+  //   setGates(newGates);
+  // }, [gateTypes, size]);
+
   useEffect(() => {
+    const gatesPerRow = 4;
     const newGates = gateTypes.map((gate, index) => {
-      const x = 10 + (index * (size + 10));
-      return new Gate(gate.type, gate.qty, gate.label, gate.color, [x, 10], size, gate.numQubits,gate.description);
+      const row = Math.floor(index / gatesPerRow);
+      const col = index % gatesPerRow;
+      const x = 10 + (col * (size + 10));
+      const y = 10 + (row * (size + 10));
+      return new Gate(gate.type, gate.qty, gate.label, gate.color, [x, y], size, gate.numQubits, gate.description);
     });
     setGates(newGates);
   }, [gateTypes, size]);
@@ -115,15 +128,15 @@ const GatePalate = ({ size = 100, gateTypes = defaultGateTypes,
   const handleCanvasClick = useCallback((event) => {
     // This checks to see if a gate has been clicked on
     event.stopPropagation();
-    const canvas = canvasRef.current;
-    const rect = canvas.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
+  const canvas = canvasRef.current;
+  const rect = canvas.getBoundingClientRect();
+  const x = event.clientX - rect.left;
+  const y = event.clientY - rect.top;
 
-    const clickedGate = gates.find(gate =>
-      x >= gate.x && x <= gate.x + gate.size &&
-      y >= gate.y && y <= gate.y + gate.size
-    );
+  const clickedGate = gates.find(gate =>
+    x >= gate.x && x <= gate.x + gate.size &&
+    y >= gate.y && y <= gate.y + gate.size
+  );
 
     // This checks if we even have a gate selected at all
     const noActiveGate = activeGate == null;
@@ -171,8 +184,10 @@ const GatePalate = ({ size = 100, gateTypes = defaultGateTypes,
   }, [gates, activeGate, activeGateUses, showAlert, setActiveGate, setActiveGateUses]);
   
 
-  const canvasWidth = gates.length * (size + 10) + 10;
-  const canvasHeight = size + 20;
+  const gatesPerRow = 4;
+  const numRows = Math.ceil(gates.length / gatesPerRow);
+  const canvasWidth = Math.min(gates.length, gatesPerRow) * (size + 10) + 10;
+  const canvasHeight = numRows * (size + 10) + 10;
 
   return (
     <div style={{
