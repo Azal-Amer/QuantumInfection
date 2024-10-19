@@ -10,6 +10,8 @@ export class Gate {
       this.numQubits = numQubits;
       this.qubits = [];
       this.description = description;
+      this.originalGate = null;
+      this.kind = this.type;
     }
 
   
@@ -22,6 +24,36 @@ export class Gate {
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(this.type, this.x + this.size / 2, this.y + this.size / 2);
+      // On the bottom left of the gate, display the qty
+      if(this.qty!=null){
+        // put a black circle behind the qty
+        const qtyPadding = this.size/8
+        ctx.beginPath();
+        ctx.arc(this.x + qtyPadding, this.y + this.size-qtyPadding, qtyPadding, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.fillStyle = 'white';
+        ctx.font = `${this.size / 5}px Arial`;
+        
+        ctx.fillText(this.qty, this.x + qtyPadding, this.y + this.size-qtyPadding);
+      }
+      // If the qty is 0, put a grey overlay on the gate
+      if(this.qty==0){
+        // Put a grey overlay on the gate wiht alpha .5
+        ctx.fillStyle = 'rgba(128, 128, 128, 0.5)';
+        ctx.fillRect(this.x, this.y, this.size, this.size);
+        // put a slash through the gate
+        ctx.strokeStyle = 'black';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(this.x, this.y);
+        ctx.lineTo(this.x + this.size, this.y + this.size);
+        ctx.stroke();
+
+
+        
+
+      }
+      
     }
     updateGate(){
       // for each qubit in the label, add it as _(x,y) to the label
@@ -52,7 +84,7 @@ export class Gate {
       
     }
     clone() {
-      return new Gate(
+      const clone = new Gate(
         this.type,
         this.qty,
         this.label,
@@ -62,6 +94,8 @@ export class Gate {
         this.numQubits,
         this.description
       );
+      clone.originalGate = this;
+      return clone;
     }
   }
   // I don't think I need a multiqubit gate

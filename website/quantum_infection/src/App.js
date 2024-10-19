@@ -7,6 +7,8 @@ import { AlertProvider } from './alertBox/AlertContext';
 import  AlertBox  from './alertBox/AlertBox';
 import 'katex/dist/katex.min.css';
 import Latex from 'react-latex';
+import InstructionsPopup from './Instructions/InstructionsPopup';
+import './Instructions/InstructionsPopup.css';
 function AppContent() {
   const [gates] = useState(false);
   const playerBoardRef = useRef(null);
@@ -15,6 +17,7 @@ function AppContent() {
   const [activeGateUses, setActiveGateUses] = useState(0);
   const [alert, setAlert] = useState({ show: false, type: '', title: '', message: '' });
   const [placedGates, setPlacedGates] = useState([]);
+  const [showInstructions, setShowInstructions] = useState(true);
   const showAlert = (type, title, message) => {
     setAlert({ show: true, type, title, message });
   };
@@ -22,6 +25,21 @@ function AppContent() {
   const hideAlert = () => {
     setAlert(prev => ({ ...prev, show: false }));
   };
+  const instructionsContent = [
+    {
+      title: "Welcome to the Quantum Circuit Game!",
+      content: "This game simulates a quantum circuit board where you can place various quantum gates."
+    },
+    {
+      title: "Placing Gates",
+      content: "Select a gate from the palette on the right and click on the board to place it. The Hadamard gate (H) rotates your qubit state by 45 degrees: $$H = \\frac{1}{\\sqrt{2}}\\begin{pmatrix} 1 & 1 \\\\ 1 & -1 \\end{pmatrix}$$"
+    },
+    {
+      title: "Board Information",
+      content: "The board shows the current state of your qubits. The probabilities represent the chance of measuring $|0\\rangle$ and $|1\\rangle$ states."
+    }
+    
+  ];
 
   return (
       <div className="App">
@@ -88,7 +106,13 @@ function AppContent() {
             </div>
           </div>
         </div>
+        <InstructionsPopup
+        isOpen={showInstructions}
+        onClose={() => setShowInstructions(false)}
+        instructions={instructionsContent}
+      />
       </header>
+      
     </div>
   );
 }

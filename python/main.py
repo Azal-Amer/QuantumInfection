@@ -29,47 +29,81 @@ def initialize(qc):
 
 
 
-def gate(qc, qubit, op, state):
-    #create ancilla quantum circuit to evolve the statevector on each turn
+def gate(qc, qubits, op, state):
+    # Create ancilla quantum circuit to evolve the statevector on each turn
     ancqc = QuantumCircuit(16)
+    
+    if not isinstance(qubits, list):
+        qubits = [qubits]  # Ensure qubits is always a list
+    
     if op == "H":
-        state = Statevector.from_label('0'*16)
-        qc.h(qubit[0])
-        state = state.evolve(qc)
-
-        #print("H gate applied")
+        for qubit in qubits:
+            qc.h(qubit)
+            ancqc.h(qubit)
+        print(f"Applied H gate to qubit(s) {qubits}")
     elif op == "X":
-        qc.x(qubit[0])
-        ancqc.x(qubit[0])
-        state = state.evolve(ancqc)
-        #print("X gate applied")
+        for qubit in qubits:
+            qc.x(qubit)
+            ancqc.x(qubit)
+        print(f"Applied X gate to qubit(s) {qubits}")
     elif op == "Z":
-        qc.z(qubit[0])
-        ancqc.z(qubit[0])
-        state = state.evolve(ancqc)
+        for qubit in qubits:
+            qc.z(qubit)
+            ancqc.z(qubit)
+        print(f"Applied Z gate to qubit(s) {qubits}")
+    elif op == "Y":
+        for qubit in qubits:
+            qc.y(qubit)
+            ancqc.y(qubit)
+        print(f"Applied Y gate to qubit(s) {qubits}")
+    elif op == "T":
+        for qubit in qubits:
+            qc.t(qubit)
+            ancqc.t(qubit)
+        print(f"Applied T gate to qubit(s) {qubits}")
     elif op == "S":
-        qc.s(qubit[0])
-        ancqc.s(qubit[0])
-        state = state.evolve(ancqc)
+        for qubit in qubits:
+            qc.s(qubit)
+            ancqc.s(qubit)
+        print(f"Applied S gate to qubit(s) {qubits}")
     elif op == "CNOT":
-        #controlling on qubit[0], target on qubit[1]
-        qc.cx(qubit[0],qubit[1])
-        ancqc.cx(qubit[0],qubit[1])
-        state = state.evolve(ancqc)
+        if len(qubits) != 2:
+            raise ValueError("CNOT gate requires exactly 2 qubits")
+        qc.cx(qubits[0], qubits[1])
+        ancqc.cx(qubits[0], qubits[1])
+        print(f"Applied CNOT gate with control {qubits[0]} and target {qubits[1]}")
     elif op == "SWAP":
-        qc.swap(qubit[0],qubit[1])
-        ancqc.swap(qubit[0],qubit[1])
-        state = state.evolve(ancqc)
+        if len(qubits) != 2:
+            raise ValueError("SWAP gate requires exactly 2 qubits")
+        qc.swap(qubits[0], qubits[1])
+        ancqc.swap(qubits[0], qubits[1])
+        print(f"Applied SWAP gate between qubits {qubits[0]} and {qubits[1]}")
     elif op == "CZ":
-        qc.cz(qubit[0],qubit[1])
-        ancqc.cz(qubit[0],qubit[1])
-        state = state.evolve(ancqc)
+        if len(qubits) != 2:
+            raise ValueError("CZ gate requires exactly 2 qubits")
+        qc.cz(qubits[0], qubits[1])
+        ancqc.cz(qubits[0], qubits[1])
+        print(f"Applied CZ gate with control {qubits[0]} and target {qubits[1]}")
     else:
-        print("Invalid operation")
-    return [state,probabilities(state)]
+        raise ValueError(f"Invalid operation: {op}")
+
+    # Evolve the state
+    state = state.evolve(ancqc)
+    
+    # Print the updated circuit
+    print("Updated Quantum Circuit:")
+    print(qc.draw(output='text', fold=150))
+
+    # Calculate and return probabilities
+    probabilities = calculate_probabilities(state)
+    return state, probabilities
+
+# def calculate_probabilities(state):
+#     probs = state.probabilities()
+#     return [(i, prob, 1-prob) for i, prob in enumerate(probs)]
 #include return of probabilities of each outcome
 
-def probabilities(state):
+def calculate_probabilities(state):
     # Get the probabilities for the entire system
     probabilities = state.probabilities_dict()
     squareProbabilities = []
@@ -90,6 +124,7 @@ def probabilities(state):
         #print(f"Probability of qubit {i} being 1: {prob_1}")
         squareProbabilities.append([i,prob_0,prob_1])
     return squareProbabilities
+    # Get the probabilities for the entire system
 
 # def singleMeasure(qc,qubit):
 #     """Measures a single qubit and returns the result"""
@@ -142,7 +177,7 @@ def endGame(qc):
     else:
         print("It's a tie!")
 
-if __name__ == "__main__":
+if __name__ == "__mainy__":
     qc = QuantumCircuit(16,16)
     state = initialize(qc)
     backend = Aer.get_backend('qasm_simulator')
