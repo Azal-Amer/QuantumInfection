@@ -145,14 +145,14 @@ def calculate_probabilities(state):
     
 #     return state
 
-def endMeasure(qc):
+def endMeasure(qc,shots):
     measureList = list(range(0,16))
     c = ClassicalRegister(len(measureList))
     qc.add_register(c)
     qc.measure(measureList,c)
     print('here')
     backend = Aer.get_backend('qasm_simulator')
-    job = backend.run(qc,shots=1)
+    job = backend.run(qc,shots=shots)
     results = job.result()
     counts = results.get_counts(qc)
     print(counts)
@@ -160,12 +160,30 @@ def endMeasure(qc):
         
     
 #runs at the end of the game when a certain number of turns have occured
+def resultInterpreter(counts):
+    """
+    @param counts: dictionary of counts from the measurement, the keys represent the quantum state, and the counts represent the number of occurances
+    @return probabilities: a list of lists, each list contains the square number, the probability of the square being 0, and the probability of the square being 1
+    """
+    # first, we're going to make a 2D array. The column is the qubit, and the row is each shot which one won. The coefficient is the number of counts that shot occured
+    # find the key in the dictionary counts, which has the highest value
+    highest = 0
+    for key in counts:
+        if counts[key] > highest:
+            highest = counts[key]
+            highestKey = key
+    print(highest)
+    return highestKey
+
+        
 
         
 def endGame(qc):
-    counts,measureList = endMeasure(qc)
+    # Whatever statevector is most common, is the one which is sent to the board
+    shots = 1024
+    counts,measureList = endMeasure(qc,shots)
     print(measureList)
-    result = list(counts.keys())[0]
+    result = resultInterpreter(counts)
     print(result)
     aliceSquares = []
     bobSquares = []
