@@ -33,7 +33,7 @@ const defaultGateTypes = [
      numQubits:1  },
   {
      type: 'H', 
-     qty: null, 
+     qty: 10, 
      label: 'H', 
      color:[255, 255, 0],
      numQubits:1,
@@ -47,14 +47,6 @@ const defaultGateTypes = [
       numQubits: 2,  // CNOT operates on 2 qubits
       description: "The CNOT (Controlled-NOT) gate flips the target qubit if the control qubit is |1⟩. It's a two-qubit gate essential for entanglement." +
         " <br />$$CNOT = \\begin{pmatrix}1 & 0 & 0 & 0 \\\\0 & 1 & 0 & 0 \\\\0 & 0 & 0 & 1 \\\\0 & 0 & 1 & 0\\end{pmatrix}$$"
-    },
-    {type : 'M',
-      qty:5,
-      label:'Measure',
-      kind: 'M',
-      color:[255,0,255],
-      numQubits:1,
-      description : "The measurement operator is a final move. Using it on a state collapses it, and in this game prevents more qubits from being added"
     },
     {type : 'T',
       qty:null,
@@ -189,9 +181,9 @@ const GatePalate = ({ size = 100, gateTypes = defaultGateTypes,
           setActiveGateUses(0);
           showAlert( 'info','Active Gate :'+ newClickedGate.type +'-Gate', 
             'You have selected '+activeGateUses+' / '+newClickedGate.numQubits+' qubits'+'<br />' + newClickedGate.description);
-          console.log('Active Gate:', activeGate);
-          console.log('Clicked Gate:', newClickedGate);
-          console.log('Active Gate:', newClickedGate.label);
+          // console.log('Active Gate:', activeGate);
+          // console.log('Clicked Gate:', newClickedGate);
+          // console.log('Active Gate:', newClickedGate.label);
         }
         
       }

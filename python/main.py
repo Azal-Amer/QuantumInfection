@@ -1,4 +1,4 @@
-from qiskit import QuantumCircuit
+from qiskit import QuantumCircuit,ClassicalRegister,QuantumRegister
 from qiskit.quantum_info import Statevector
 from qiskit_aer import Aer
 
@@ -146,8 +146,12 @@ def calculate_probabilities(state):
 #     return state
 
 def endMeasure(qc):
-    measureList = list(range(1,15))
-    qc.measure(measureList,measureList)
+    measureList = list(range(0,16))
+    c = ClassicalRegister(len(measureList))
+    qc.add_register(c)
+    qc.measure(measureList,c)
+    print('here')
+    backend = Aer.get_backend('qasm_simulator')
     job = backend.run(qc,shots=1)
     results = job.result()
     counts = results.get_counts(qc)
@@ -156,15 +160,27 @@ def endMeasure(qc):
         
     
 #runs at the end of the game when a certain number of turns have occured
+
+        
 def endGame(qc):
     counts,measureList = endMeasure(qc)
+    print(measureList)
     result = list(counts.keys())[0]
-    
-    for i in measureList:
-        if result[15-i]=='0':
+    print(result)
+    aliceSquares = []
+    bobSquares = []
+    probabilities = []
+    result = result[::-1]
+    for i in range(len(result)):
+        print(i)
+        print(15-i)
+        print(len(result))
+        if result[i]=='0':
             aliceSquares.append(i)
-        elif result[15-i]=='1':
+            probabilities.append([i,0,1])
+        elif result[i]=='1':
             bobSquares.append(i)
+            probabilities.append([i,1,0])
     print("End Game")
     print("Alice's squares: ",aliceSquares)
     print("Bob's squares: ",bobSquares)
@@ -176,6 +192,7 @@ def endGame(qc):
         print("Bob wins!")
     else:
         print("It's a tie!")
+    return probabilities
 
 if __name__ == "__mainy__":
     qc = QuantumCircuit(16,16)

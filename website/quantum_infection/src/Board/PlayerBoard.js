@@ -1,7 +1,7 @@
 import React, { forwardRef,useRef, useEffect, useState,useCallback } from 'react';
 import PropTypes from 'prop-types';
 import {BoardSpaces} from './boardClass'; // Make sure this path is correct
-import {boardUpdater,serverBoardInitializer} from './boardUpdater'; // Make sure this path is correct
+import {endBoardUpdater,boardUpdater,serverBoardInitializer} from './boardUpdater'; // Make sure this path is correct
 function customTypeBoard(board, size,) {
   var minusSpaces= [];
   var plusSpaces = [];
@@ -70,7 +70,7 @@ function customTypeBoard(board, size,) {
 const PlayerBoard = forwardRef(({ activeGate,
   setActiveGate,setBoardInfo,
   activeGateUses,setActiveGateUses,showAlert,
-  hideAlert,placedGates,setPlacedGates }, ref) => {
+  hideAlert,placedGates,setPlacedGates}, ref) => {
   const size = 4; // 6x6 grid
   const canvasRef = useRef(null);
   const [board,setBoard] = useState(() => customTypeBoard(new BoardSpaces(size), size));
@@ -80,14 +80,39 @@ const PlayerBoard = forwardRef(({ activeGate,
   // Hovered square, self explanatory
   const [clickedSquare, setClickedSquare] = useState(null);
   // Clicked square, self explanatory
+  useEffect(() => {
+    const handleEndGame = () => {
+      endBoardUpdater(board, setBoard);
+      console.log(board.locked);
+    };
+
+    // Add event listener
+    window.addEventListener('endGame', handleEndGame);
+
+    // Cleanup function to remove event listener
+    return () => {
+      window.removeEventListener('endGame', handleEndGame);
+    };
+  }, [board, setBoard]); //
+
+
+  useEffect(() => {
+    drawBoard();
+  }, [board, hoveredSquare, clickedSquare, activeGate, placedGates]);
+  // later
+  const handleGateApplication = () => {
+
+    window.dispatchEvent(new Event('gateApplied'));
+  };
   
 
 
   const canvasSize = 700; // pixels
   const squareSize = canvasSize / size;
 
-  useEffect(() => {
+  const drawBoard = useCallback(() => {
     const canvas = canvasRef.current;
+    if (!canvas) return;
     const ctx = canvas.getContext('2d');
 
     const drawGrid = () => {
@@ -274,10 +299,12 @@ const PlayerBoard = forwardRef(({ activeGate,
         }
 
         if(activeGate&&safeToTake){
-
           const square = board.accessSpace(clickedSquare.y, clickedSquare.x)
           square.gates.push(activeGate);
+          
+          // setRounds(rounds+1);
           if(activeGate.numQubits==1){
+            // In this case, we're dealing with a single qubit gate, so it's safe to end a round
             boardUpdater(board,setBoard,activeGate);
             if(activeGate.originalGate.qty!=null){
               // If it's a single qubit gate with fixed quantities, then we need to decrement it as well
@@ -294,6 +321,7 @@ const PlayerBoard = forwardRef(({ activeGate,
             console.log('Active Gate NumQubits: ',activeGate.numQubits);
           }
           activeGate.qubits.push(clickedSquare);
+          
           activeGate.updateGate();
           if(activeGateUses === (activeGate.numQubits-1)){
             setActiveGate(null); 
@@ -302,6 +330,7 @@ const PlayerBoard = forwardRef(({ activeGate,
             boardUpdater(board,setBoard,activeGate);
             board.update()
             console.log('Active Gate is now null');
+            handleGateApplication();
           }
           
           else{
@@ -326,7 +355,7 @@ const PlayerBoard = forwardRef(({ activeGate,
     };
 
     drawGrid();
-  }, [board, size, squareSize, canvasSize, hoveredSquare, clickedSquare]);
+  }, [board, size, squareSize, canvasSize, hoveredSquare, clickedSquare, activeGate, placedGates]);
 
   const handleCanvasClick = (event) => {
     // Below will just check if we clicked on a space on the board, and if so, which one
@@ -422,34 +451,6 @@ const PlayerBoard = forwardRef(({ activeGate,
           onMouseLeave={handleCanvasLeave}
           style={{ border: '1px solid black' }}
         />
-        {/* the below prints the information locally */}
-        {/* {clickedSquare && (
-          <p>
-            Clicked square: ({clickedSquare.x}, {clickedSquare.y})
-            <br />
-            Applied Gates: {board.accessSpace(clickedSquare.y, clickedSquare.x).gates && 
-              board.accessSpace(clickedSquare.y, clickedSquare.x).gates.length > 0 
-              ? `(${board.accessSpace(clickedSquare.y, clickedSquare.x).gates.join(', ')})`
-              : '(None)'}
-            <br />
-            Probability:(
-              {board.accessSpace(clickedSquare.y, clickedSquare.x).zeroProb}, 
-              {board.accessSpace(clickedSquare.y, clickedSquare.x).oneProb}
-              )
-          </p>
-        )}
-        {hoveredSquare && (
-          <p>
-            Hovered square: ({hoveredSquare.x}, {hoveredSquare.y})
-            <br />
-            Gates: {hoveredGates.length > 0 ? hoveredGates.join(', ') : 'None'}
-            <br />
-            Probability:(
-              {board.accessSpace(hoveredSquare.y, hoveredSquare.x).zeroProb}, 
-              {board.accessSpace(hoveredSquare.y, hoveredSquare.x).oneProb}
-              )
-          </p>
-        )} */}
       </div>
     </div>
   );
@@ -466,7 +467,8 @@ PlayerBoard.propTypes = {
   showAlert: PropTypes.func.isRequired,
   hideAlert: PropTypes.func.isRequired,
   placedGates: PropTypes.array,
-  setPlacedGates: PropTypes.func
+  setPlacedGates: PropTypes.func,
+
 };
 export default PlayerBoard;
 function gatesListToLabel(gates) {
@@ -488,12 +490,13 @@ function spaceUpdater(board,setBoardInfo,square,label){
 
 }
 function currentGateColor(distance, color) {
-    if (distance > 10) {
-        distance = 10;
+  const maxDist = 15;
+    if (distance > maxDist) {
+        distance = maxDist*.92;
     }
 
     const saturation = .9 - (distance / 20); // Starts at 0.5, decreases to 0
-    const alpha = (1 - (distance / 10))**3; // Starts at 0.5, decreases to 0
+    const alpha = (1 - (distance / maxDist)); // Starts at 0.5, decreases to 0
 
     const r = Math.round(color[0] * saturation + (255 * (1 - saturation)));
     const g = Math.round(color[1] * saturation + (255 * (1 - saturation)));

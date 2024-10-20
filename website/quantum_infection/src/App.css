@@ -107,6 +107,8 @@
 .board-wrapper {
   display: flex;
   align-items: left;
+  padding-right: 10%;
+  /* add padding between elements in it */
 }
 .board-info-container{
   align-items: left;
