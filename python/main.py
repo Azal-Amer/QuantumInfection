@@ -23,19 +23,22 @@ def initialize(qc):
     state = gate(qc,[15],"X",state)[0]
 
     #returns the statevector and the probabilities of each outcome
-    return [state,probabilities(state)]
+    return [state,calculate_probabilities(state)]
 
 #include return of probabilities of each outcome
 
 
 
-def gate(qc, qubits, op, state):
+def gate(qc, qubits, op, state, aliceTurn = True, bobTurn = False):
     # Create ancilla quantum circuit to evolve the statevector on each turn
     ancqc = QuantumCircuit(16)
     
     if not isinstance(qubits, list):
         qubits = [qubits]  # Ensure qubits is always a list
     
+    probabilityOnControlAlice = calculate_probabilities(state)[qubits[0]][1]
+    probabilityOnControlBob = calculate_probabilities(state)[qubits[0]][2]
+
     if op == "H":
         for qubit in qubits:
             qc.h(qubit)
@@ -67,6 +70,11 @@ def gate(qc, qubits, op, state):
             ancqc.s(qubit)
         print(f"Applied S gate to qubit(s) {qubits}")
     elif op == "CNOT":
+        if probabilityOnControlAlice < .5 and aliceTurn:
+            raise ValueError("CNOT gate requires the control qubit mostly Alice's")
+        elif probabilityOnControlBob < .5 and bobTurn:
+            raise ValueError("CNOT gate requires the control qubit mostly Bob's")
+        
         if len(qubits) != 2:
             raise ValueError("CNOT gate requires exactly 2 qubits")
         qc.cx(qubits[0], qubits[1])
@@ -75,12 +83,20 @@ def gate(qc, qubits, op, state):
     elif op == "SWAP":
         if len(qubits) != 2:
             raise ValueError("SWAP gate requires exactly 2 qubits")
+        
         qc.swap(qubits[0], qubits[1])
         ancqc.swap(qubits[0], qubits[1])
         print(f"Applied SWAP gate between qubits {qubits[0]} and {qubits[1]}")
+    
     elif op == "CZ":
         if len(qubits) != 2:
             raise ValueError("CZ gate requires exactly 2 qubits")
+        
+        if probabilityOnControlAlice < .5 and aliceTurn:
+            raise ValueError("CZ gate requires the control qubit mostly Alice's")
+        elif probabilityOnControlBob < .5 and bobTurn:
+            raise ValueError("CZ gate requires the control qubit mostly Bob's")
+        
         qc.cz(qubits[0], qubits[1])
         ancqc.cz(qubits[0], qubits[1])
         print(f"Applied CZ gate with control {qubits[0]} and target {qubits[1]}")
@@ -221,5 +237,5 @@ if __name__ == "__mainy__":
     #singleMeasure(qc,1)
     print("")
     gate(qc,[1],"H",state[0])
-    print(probabilities(state[0]))
+    #print(probabilities(state[0]))
     endGame(qc)
