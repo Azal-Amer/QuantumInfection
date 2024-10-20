@@ -154,7 +154,7 @@ def measure_qubit():
         "message": "Qubit measured",
         "result": measured_value,
         "probabilities": probabilities
-    })
+    }),200
 
 @app.route('/game_status', methods=['GET'])
 def game_status():
@@ -168,41 +168,16 @@ def game_status():
 @app.route('/end_game', methods=['POST'])
 def end_game():
     global quantum_circuit, current_state, measured_qubits
+    print('trying to end game')
     
     # Measure all unmeasured qubits
-    unmeasured_qubits = set(range(16)) - measured_qubits
-    for qubit in unmeasured_qubits:
-        ancilla_qc = QuantumCircuit(16, 1)
-        ancilla_qc.measure(qubit, 0)
-        backend = Aer.get_backend('qasm_simulator')
-        job = backend.run(ancilla_qc.compose(quantum_circuit), shots=1)
-        result = job.result().get_counts(ancilla_qc).most_frequent()
-        measured_value = int(result)
-        new_statevector = Statevector.from_int(measured_value, 2**16)
-        current_state = current_state.evolve(new_statevector)
-        measured_qubits.add(qubit)
-
-    # Calculate final probabilities
-    final_probabilities = main.probabilities(current_state)
-
-    # Determine the winner
-    player_0_qubits = sum(1 for _, prob_0, _ in final_probabilities if prob_0 > 0.5)
-    player_1_qubits = 16 - player_0_qubits
-
-    if player_0_qubits > player_1_qubits:
-        winner = "Player 0"
-    elif player_1_qubits > player_0_qubits:
-        winner = "Player 1"
-    else:
-        winner = "Tie"
+    probabilities=main.endGame(quantum_circuit)
+    print('ended game')
 
     return jsonify({
         "message": "Game ended",
-        "final_probabilities": final_probabilities,
-        "player_0_qubits": player_0_qubits,
-        "player_1_qubits": player_1_qubits,
-        "winner": winner
-    })
+        "probabilities": probabilities
+    }),200
 
 if __name__ == '__main__':
     app.run(debug=True,port = 5000)

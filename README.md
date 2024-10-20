@@ -162,9 +162,21 @@ Guide to setup:
 - Start the node server, and you should be interfacing. Below are known bugs
 
 > [!Bug] Bugs
-> - [ ] Tile Updating only on Mouse move
-> - [ ] Not implemented measurement operator yet
+> - [x] Tile Updating only on Mouse move
+> - [x] Not implemented measurement operator yet
 > - [ ] Window resizing is broken
+
+- Second half of the day, I fully integrated with the interfacing code, implemented a round system, and measurement
+	- For the round system, I used React's event system to announce that the game had finished. Then the PlayerBoard, which had appropriate board-modification permissions, could initiate the endgame and board locking. 
+	- Any access to the board is made using a *queing system* . This is because I encountered an error that meant that on the moment that the endgame was triggered, a gate was applied, and the gate acting on the board overwrote the action of the endgame.
+
+In the python, the endgame methods had much debugging done, but hopefully it's self explanatory. Mostly bug squashing, but also modifying the output to match with the existing API format.
+> [!todo] What's left
+> - [ ] Implement alternating rounds system
+> 	- [ ] Each player has their own number of gates, not from the fixed whole
+> - [ ] Add a play-again button
+> - [ ] Debug the behavior of the API, sometimes the board doesn't initialize properly
+> - [ ] Implement SWAP and $C_{z}$ gates
 
 ## Python Notes
 

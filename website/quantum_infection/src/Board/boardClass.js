@@ -34,6 +34,7 @@ export class Space {
         this.state = state;
         this.color = getColorForProbability(this.zeroProb, [0, 0, 255], [255,0,0], 0, 1);
         this.gates = [];
+        
     }
     updateState() {
         this.color = getColorForProbability(this.zeroProb, [0, 0, 255], [255,0,0], 0, 1);
@@ -44,7 +45,7 @@ export class BoardSpaces {
     constructor(size) {
         this.size = size;
         this.spaces = this.createSpaces();
-
+        this.locked = false;
     }
     createSpaces() {
         let spaces = [];
@@ -64,17 +65,17 @@ export class BoardSpaces {
         return this.spaces[x][y];
     }
     updateProbabilities(probabilities){
-        console.log("Updating probabilities",probabilities);
+        // Once the game ends, we should prevent any probabilities from being updated
+        console.log("Locked",this.locked);
+        if(this.locked==false){
+            console.log("Updating probabilities",probabilities);
         // Update the probabilities of each space
         // probabilities is a 1d array, size*size long, want to update the zeroProb and oneProb of each space 
         // in the board
         for(let i = 0; i < this.size; i++){
             for(let j = 0; j < this.size; j++){
                 const index = i*this.size + j;
-                console.log('map');
-                console.log(index);
-                console.log('i',i);
-                console.log('j',j);
+
                 this.spaces[i][j].zeroProb = parseFloat(probabilities[index][1].toFixed(3));
                 // console.log(probabilities[index][1],probabilities[index][2]);
                 this.spaces[i][j].oneProb =  parseFloat(probabilities[index][2].toFixed(3));
@@ -83,7 +84,7 @@ export class BoardSpaces {
             
         }
         this.update();
-
+        }
         
     }
     update(){
@@ -92,6 +93,21 @@ export class BoardSpaces {
                 this.spaces[i][j].updateState();
             }
         }
+    }
+    clone(){
+        const clone = new BoardSpaces(this.size);
+        clone.spaces = this.spaces.map(row => row.map(space => {
+        const newSpace = new Space(space.x, space.y, space.zeroProb, space.oneProb, space.state);
+        newSpace.color = space.color;
+        newSpace.gates = space.gates.map(gate => gate.clone());
+        return newSpace;
+        }));
+        clone.locked = this.locked;
+        return clone;
+        
+        
+        
+       
     }
 }
 // export default BoardSpaces,space;
