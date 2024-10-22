@@ -11,7 +11,6 @@ tags: []
 
 ## Rules
 Board starts with the (1,1) as 0 and (6,6) as 1. All other squares start in a checker pattern of +/- states.
-
 - Each turn, a player applies either a 1 or 2 qubit operation (or measures a qubit). You can only apply 1 qubit operations on qubits that are adjacent to squares that are yours (not in superposition) Two qubit operations can occur between any two adjacent qubits, but one has to be adjacent to a definite states
     - 1 qubit gates: H,X,Z,S
         - 2 qubit gates: CNOT, SWAP, CZ
@@ -59,7 +58,7 @@ npm run start
 Make sure you have node installed
 ### Object Classes
 
-#### - [ ] Board and Spaces
+#### Board and Spaces
 The board has two functions, 
 - constructor: Takes the size of the board and populates with spaces
 - A getter: Will enable people to access spaces from the board
@@ -79,6 +78,9 @@ C
 Update for today, is that the effect classes don't have direct modifying perms, you need to use setters and getters. Right now, I want to find a way to display the information about the board on the side in the main context, so I'm using a large-scope variable of `boardInfo`. 
 Next time, make it so that there's a hover and a clicked info, then remove it from the bottom.
 Also, add some more styling to the gate palate. Then add the control gates, with fixed quantities.
+#### Gates
+The gate class is currently a WIP, FUTURE AZAL PLEASE WRITE THIS OUT
+
 ### Oct 16th
 Goal for today, is to implement multi-controlled gates, and design their visuals. Additionally, it would be great if I could start wiring into the python code for Ayden to build a test environment with. 
 - Will eventually need to make an error/alert asset which sticks at the top, and is an inherited setter or getter
@@ -175,9 +177,14 @@ In the python, the endgame methods had much debugging done, but hopefully it's s
 > - [ ] Implement alternating rounds system
 > 	- [ ] Each player has their own number of gates, not from the fixed whole
 > - [ ] Add a play-again button
-> - [ ] Debug the behavior of the API, sometimes the board doesn't initialize properly
+> - [x] Debug the behavior of the API, sometimes the board doesn't initialize properly
 > - [ ] Implement SWAP and $C_{z}$ gates
 
+### Oct 22
+- Added a listener for the `endgame`  emitted from`Roundrunner`, into `gamePalate`. Now when the game ends, the palate is un-clickable and the board isn't interface-able. 
+		- Additionally, modified the`draw()` function of the gate object, so that it now takes `inactive` as a parameter. That way I can deactivate gates visually at will
+- Implemented display at endGame, along with a Play again button which resets the board and player states. 
+	- Should also declare the winner, not yet implemented
 ## Python Notes
 
 

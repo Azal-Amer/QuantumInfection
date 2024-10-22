@@ -2,7 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 const RoundsTracker = () => {
   const [currentRound, setCurrentRound] = useState(0);
-  const MAX_ROUNDS = 20; // Or whatever your maximum round count is
+  const MAX_ROUNDS = 2; // Or whatever your maximum round count is
+  const [currentPlayer, setCurrentPlayer] = useState('Alice');
   const handleEndgame = () => {
 
     window.dispatchEvent(new Event('endGame'));
@@ -11,12 +12,34 @@ const RoundsTracker = () => {
   const incrementRound = useCallback(() => {
     setCurrentRound(prevRound => {
       const newRound = prevRound + 1;
-      console.log("that's a round")
       if (newRound >= MAX_ROUNDS) {
         handleEndgame();
       }
       return newRound;
+
     });
+    setCurrentPlayer(prevPlayer => {
+      const newPlayer = prevPlayer === 'Alice' ? 'Bob' : 'Alice';
+      return newPlayer;
+    });
+
+  }, []);
+
+  useEffect(() => {
+    console.log("Dispatching playerChange event:", currentPlayer);
+    const playerChangeEvent = new CustomEvent('playerChange', { detail: currentPlayer });
+    window.dispatchEvent(playerChangeEvent);
+  }, [currentPlayer]);
+  useEffect(() => {
+    const handleReset = () => {
+      setCurrentRound(0);
+      setCurrentPlayer('Alice');
+    };
+
+    window.addEventListener('gameReset', handleReset);
+    return () => {
+      window.removeEventListener('gameReset', handleReset);
+    };
   }, []);
   useEffect(() => {
     // Listen for a custom event that signals a gate has been applied

@@ -2,6 +2,9 @@ export class Gate {
     constructor(type, qty, label, color,initialPos, size, numQubits,description) {
       this.type = type;
       this.qty = qty;
+      this.aliceQty = qty !== null ? Number(qty) : null;
+      this.bobQty = qty !== null ? Number(qty) : null;
+      // Alice and Bob should start with the same qty of gates
       this.label = label;
       this.color = color;
       this.x = initialPos[0];
@@ -15,10 +18,12 @@ export class Gate {
     }
 
   
-    drawGate(ctx) {
+    drawGate(ctx,inactive) {
+      console.log('drawing',inactive);
+      // console.log("Alice's Quantity:", this.aliceQty);
+      // console.log("Bob's Quantity:", this.bobQty);
       ctx.fillStyle = `rgb(${this.color[0]}, ${this.color[1]}, ${this.color[2]})`;
       ctx.fillRect(this.x, this.y, this.size, this.size);
-      
       ctx.fillStyle = 'black';
       ctx.font = `${this.size / 3}px Arial`;
       ctx.textAlign = 'center';
@@ -33,11 +38,11 @@ export class Gate {
         ctx.fill();
         ctx.fillStyle = 'white';
         ctx.font = `${this.size / 5}px Arial`;
-        
         ctx.fillText(this.qty, this.x + qtyPadding, this.y + this.size-qtyPadding);
       }
       // If the qty is 0, put a grey overlay on the gate
-      if(this.qty==0){
+      if(this.qty==0 || inactive){
+        
         // Put a grey overlay on the gate wiht alpha .5
         ctx.fillStyle = 'rgba(128, 128, 128, 0.5)';
         ctx.fillRect(this.x, this.y, this.size, this.size);
@@ -48,10 +53,6 @@ export class Gate {
         ctx.moveTo(this.x, this.y);
         ctx.lineTo(this.x + this.size, this.y + this.size);
         ctx.stroke();
-
-
-        
-
       }
       
     }
