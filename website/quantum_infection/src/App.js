@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState,useCallback ,useEffect} from 'react';
 import './App.css';
 import './alertBox/Alert.css';
 import PlayerBoard from './Board/PlayerBoard';
@@ -10,6 +10,7 @@ import Latex from 'react-latex';
 import InstructionsPopup from './Instructions/InstructionsPopup';
 import './Instructions/InstructionsPopup.css';
 import RoundsTracker from './Rounds/RoundsTracker';
+import { resetGameState } from './Board/boardUpdater';
 function AppContent() {
   const [gates] = useState(false);
   const playerBoardRef = useRef(null);
@@ -20,18 +21,55 @@ function AppContent() {
   const [placedGates, setPlacedGates] = useState([]);
   const [showInstructions, setShowInstructions] = useState(true);
   const [rounds, setRounds] = useState(0);
-  const showAlert = (type, title, message) => {
-    setAlert({ show: true, type, title, message });
-  };
+  const resetGame = useCallback(async () => {
+    // Reset game state in boardUpdater
+    resetGameState();
+    
+    // Dispatch reset event for components to handle their own reset logic
+    window.dispatchEvent(new Event('gameReset'));
+    
+    // Reset local state
+    setActiveGate(null);
+    setActiveGateUses(0);
+    setPlacedGates([]);
+    setRounds(0);
+    setBoardInfo(null);
+    
+    // Hide any active alerts
+    hideAlert();
+  }, []);
+  const showAlert = useCallback((type, title, message, actions = []) => {
+    setAlert({ show: true, type, title, message, actions });
+  }, []);
 
-  const handleGameEnd = (data) => {
-    // Handle game end, e.g., show results, reset board, etc.
-    console.log('Game ended with data:', data);
-    // You can add more logic here to handle the end of the game
-  };
+  
   const hideAlert = () => {
     setAlert(prev => ({ ...prev, show: false }));
   };
+  const handleGameEnd = useCallback(() => {
+    showAlert(
+      'success',
+      'Game Over!',
+      'Congratulations! The game has ended. Take a moment to review the final board state.' + 
+      '<br /><br />Click "Play Again" to start a new game, or review your moves before continuing.',
+      [{
+        label: 'Play Again',
+        onClick: resetGame
+      }]
+    );
+  }, [showAlert, resetGame]);
+  // Add the event listener for endGame
+  useEffect(() => {
+    const endGameListener = () => {
+      handleGameEnd();
+    };
+
+    window.addEventListener('endGame', endGameListener);
+    return () => {
+      window.removeEventListener('endGame', endGameListener);
+    };
+  }, [handleGameEnd]);
+  
   const instructionsContent = [
     {
       title: "Welcome to Quantum Infection",
@@ -77,11 +115,12 @@ function AppContent() {
             <div className="alert-container">
               {alert.show && (
                 <AlertBox
-                  type={alert.type}
-                  title={alert.title}
-                  message={alert.message}
-                  onClose={hideAlert}
-                />
+                type={alert.type}
+                title={alert.title}
+                message={alert.message}
+                actions={alert.actions} // Make sure this line is present
+                onClose={hideAlert}
+              />
               )}
             </div>
             <div className="gate-palate-container">

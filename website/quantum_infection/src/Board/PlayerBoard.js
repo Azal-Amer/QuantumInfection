@@ -40,8 +40,7 @@ function customTypeBoard(board, size,) {
         [1,3],[2,3]
     ]
   }
-  console.log('Minus Spaces: ',minusSpaces);
-    serverBoardInitializer(plusSpaces,minusSpaces);
+  serverBoardInitializer(plusSpaces,minusSpaces);
   if(minusSpaces){
     for(let i = 0; i < plusSpaces.length; i++){
       board.accessSpace(plusSpaces[i][1],plusSpaces[i][0]).zeroProb = .5;
@@ -305,10 +304,20 @@ const PlayerBoard = forwardRef(({ activeGate,
           // setRounds(rounds+1);
           if(activeGate.numQubits==1){
             // In this case, we're dealing with a single qubit gate, so it's safe to end a round
-            boardUpdater(board,setBoard,activeGate);
+            
             if(activeGate.originalGate.qty!=null){
               // If it's a single qubit gate with fixed quantities, then we need to decrement it as well
+              // Log the quantities before this, and then after
+              console.log('TAG Active Quantity',activeGate.originalGate.qty);
+              console.log('TAG Alice Gate Quantity',activeGate.originalGate.qty);
+              console.log('TAG Bob Gate Quantity',activeGate.originalGate.qty);
+
               activeGate.originalGate.qty -=1;
+              // It looks like the qty param is a deep reference to both alice and bob's quantities. That's bad.
+              console.log('TAG Active Quantity',activeGate.originalGate.qty);
+              console.log('TAG Alice Gate Quantity',activeGate.originalGate.qty);
+              console.log('TAG Bob Gate Quantity',activeGate.originalGate.qty);
+
             }
           }
           setPlacedGates([...placedGates,activeGate]);
@@ -323,11 +332,13 @@ const PlayerBoard = forwardRef(({ activeGate,
           activeGate.qubits.push(clickedSquare);
           
           activeGate.updateGate();
-          if(activeGateUses === (activeGate.numQubits-1)){
+          if(activeGateUses === (activeGate.numQubits-1) ){
             setActiveGate(null); 
             hideAlert();
             setActiveGateUses(0);
             boardUpdater(board,setBoard,activeGate);
+
+            
             board.update()
             console.log('Active Gate is now null');
             handleGateApplication();
@@ -438,6 +449,20 @@ const PlayerBoard = forwardRef(({ activeGate,
       document.removeEventListener('mousedown', handleOutsideClick);
     };
   }, [handleOutsideClick]);
+  // Add this to your existing useEffects in PlayerBoard
+useEffect(() => {
+  const handleGameReset = () => {
+    setBoard(customTypeBoard(new BoardSpaces(size), size));
+    setClickedSquare(null);
+    setHoveredSquare(null);
+    setPlacedGates([]); // Clear placed gates history
+  };
+
+  window.addEventListener('gameReset', handleGameReset);
+  return () => {
+    window.removeEventListener('gameReset', handleGameReset);
+  };
+}, [size]); // size is the only dependency since customTypeBoard is defined outside the component
 
   return (
     <div ref={ref}>

@@ -22,8 +22,6 @@ def qubit_from_square(column, row):
 @app.route('/initializeBoard', methods=['POST', 'OPTIONS'])
 def initialize_board():
     # reset all the global variables
-    
-
     if request.method == 'OPTIONS':
         response = jsonify({'status': 'ok'})
         response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
@@ -97,6 +95,7 @@ def initialize_board():
         "message": "Board initialized successfully",
         "probabilities": probabilities
     }), 200
+
 @app.route('/apply_gate', methods=['POST'])
 def apply_gate():
     global quantum_circuit, current_state, turn_count

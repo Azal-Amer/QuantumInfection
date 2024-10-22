@@ -9,6 +9,7 @@ function checkGameOver() {
 }
 
 export function endBoardUpdater(board, setBoard) {
+  console.log('endBoardUpdater called');
   if (checkGameOver()) return;
 
   isGameOver = true; // Set the game over flag immediately
@@ -25,7 +26,6 @@ export function endBoardUpdater(board, setBoard) {
       updatedBoard.locked = true;
       setBoard(updatedBoard);
       console.log('Board updated:', updatedBoard);
-      console.log('locked', updatedBoard.locked);
     })
     .catch(error => {
       console.error('Error ending game:', error);
@@ -33,6 +33,7 @@ export function endBoardUpdater(board, setBoard) {
 }
 
 export function boardUpdater(board, setBoard, gate) {
+  console.log('Board updater called with gate:', gate);
   if (checkGameOver()) return;
 
   const qubits = gate.qubits;
@@ -60,8 +61,11 @@ export function boardUpdater(board, setBoard, gate) {
     });
 }
 
+let initialized = false;
+
 export function serverBoardInitializer(plusSpaces, minusSpaces) {
   if (checkGameOver()) return Promise.resolve(false);
+  if(initialized){ return Promise.resolve(true); }
 
   console.log('Initializing board with plusSpaces:', plusSpaces, 'and minusSpaces:', minusSpaces);
   const sourceURL = 'http://127.0.0.1:5000/initializeBoard';
@@ -79,6 +83,7 @@ export function serverBoardInitializer(plusSpaces, minusSpaces) {
     credentials: 'include',
     mode: 'cors'
   };
+  initialized = true;
   return fetch(sourceURL, requestOptions)
     .then(response => {
       if (!response.ok) {
@@ -100,4 +105,5 @@ export function serverBoardInitializer(plusSpaces, minusSpaces) {
 // Function to reset the game state (use this when starting a new game)
 export function resetGameState() {
   isGameOver = false;
+  initialized = false;
 }

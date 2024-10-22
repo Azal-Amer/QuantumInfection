@@ -70,32 +70,111 @@ const defaultGateTypes = [
 const GatePalate = ({ size = 100, gateTypes = defaultGateTypes, 
   activeGate, setActiveGate, playerBoardRef,activeGateUses,
   setActiveGateUses,showAlert,hideAlert }) => {
-  const canvasRef = useRef(null);
   
+    
+  const canvasRef = useRef(null);
+  const [, setCurrentPlayer] = useState('Alice');
+  // Since we haven't gotten the player by player implementation working yet, the above and associated code is
+  // unlinked from the main logic.
   const [gates, setGates] = useState([]);
-  // This effect will create the gates
-
-  // useEffect(() => {
-  //   const newGates = gateTypes.map((gate, index) => {
-  //     const x = 10 + (index * (size + 10));
-  //     return new Gate(gate.type, gate.qty, gate.label, gate.color, [x, 10], size, gate.numQubits,gate.description);
-  //   });
-  //   setGates(newGates);
-  // }, [gateTypes, size]);
+  const [isGameOver, setIsGameOver] = useState(false);
 
   useEffect(() => {
+    const handleGameEnd = () => {
+      console.log('Game ended inside gatepalate');
+      setIsGameOver(true);
+      // Clear any active gate when game ends
+      if (activeGate) {
+        setActiveGate(null);
+        hideAlert();
+      }
+    };
+  
+    // Debug logging to verify listener setup
+    console.log('Setting up endGame listener in GatePalate');
+    window.addEventListener('endGame', handleGameEnd);
+  
+    return () => {
+      console.log('Cleaning up endGame listener in GatePalate');
+      window.removeEventListener('endGame', handleGameEnd);
+    };
+    // Remove dependencies that aren't needed for the listener setup
+  }, []); // Empty dependency array since we don't need these dependencies for the listener
+  // Above is the listener for the endgame
+  
+  // The initial player is Alice
+  
+  
+
+  const updateGateQuantities = useCallback((player) => {
+    setGates(prevGates => prevGates.map(gate => {
+      const newGate = gate.clone();
+      console.log('Before Gate:', newGate);
+      
+      // newGate.qty = player === 'Alice' ? newGate.aliceQty : newGate.bobQty;
+      newGate.qty=newGate.aliceQty;
+
+      console.log('New Gate:', newGate);
+      // This is what switches the new quantity to newgate.qty. I'm hoping that setting property to another
+      // would mean that it is just a reference
+      return newGate;
+    }));
+    console.log('Gates updated for player:', player);
+  }, []);
+
+  // This below effect will create the gates, we want to autopopulate with 
+  // rows of 4. This WONT draw the gates, but it will create them and space them out
+  function initialGates(gateTypes, size) {
     const gatesPerRow = 4;
-    const newGates = gateTypes.map((gate, index) => {
+    return gateTypes.map((gate, index) => {
       const row = Math.floor(index / gatesPerRow);
       const col = index % gatesPerRow;
       const x = 10 + (col * (size + 10));
       const y = 10 + (row * (size + 10));
-      const newGate = new Gate(gate.type, gate.qty, gate.label, gate.color, [x, y], size, gate.numQubits,gate.description);
+      
+      const newGate = new Gate(
+        gate.type, 
+        gate.qty, 
+        gate.label, 
+        gate.color, 
+        [x, y], 
+        size, 
+        gate.numQubits, 
+        gate.description
+      );
+      
       newGate.kind = gate.kind;
+      newGate.aliceQty = gate.qty !== null ? Number(gate.qty) : null;
+      newGate.bobQty = gate.qty !== null ? Number(gate.qty) : null;
+      
       return newGate;
     });
+  }
+  
+  // Then modify your useEffect to use this function:
+  useEffect(() => {
+    const newGates = initialGates(gateTypes, size);
     setGates(newGates);
   }, [gateTypes, size]);
+
+
+  // This below effect will update the gate quantities when the player changes
+   useEffect(() => {
+    const handlePlayerChange = (event) => {
+      const newPlayer = event.detail;
+      console.log('New player:', newPlayer);
+      setCurrentPlayer(newPlayer);
+      updateGateQuantities(newPlayer);
+      console.log('Gates:', gates);
+    };
+    
+    window.addEventListener('playerChange', handlePlayerChange);
+
+    return () => {
+      window.removeEventListener('playerChange', handlePlayerChange);
+    };
+  }, [updateGateQuantities]);
+  
 
   // this effect will draw the gates on the canvas
   useEffect(() => {
@@ -105,7 +184,8 @@ const GatePalate = ({ size = 100, gateTypes = defaultGateTypes,
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     gates.forEach(gate => {
       ctx.globalAlpha = 1;
-      gate.drawGate(ctx);
+      gate.drawGate(ctx, isGameOver);
+      // the below gate will outline the gate if it's active
       if (activeGate && gate.type === activeGate.type) {
         ctx.strokeStyle = 'rgba(0, 0, 0, 0.5)';
         // make the stroke 50% transparent
@@ -128,7 +208,6 @@ const GatePalate = ({ size = 100, gateTypes = defaultGateTypes,
             setActiveGate(null);
             hideAlert();
             console.log('Active gate is now null');
-            
             setActiveGateUses(0);
           }
         }
@@ -167,13 +246,12 @@ const GatePalate = ({ size = 100, gateTypes = defaultGateTypes,
       
 
       // Makes clickedGate a new instance of the gate.
-      // This hopefully is a deep copy, so the qubits stay referenced to the original.
       const clickedGateCondition = activeGateUses === 0 || activeGateUses === activeGate.numQubits;
       // If we click away before we put a gate down,
         // we can choose another gate, but if not,
         // don't let the user change the gate unless all uses are exhausted
       const validQty = clickedGate.qty !== null ? clickedGate.qty > 0 : true
-      if ((noActiveGate ||clickedGateCondition)&&validQty) {
+      if ((noActiveGate ||clickedGateCondition)&&validQty&&(!isGameOver)) {
         // No active gate, so we can select the clicked gate
         if (process.env.NODE_ENV === 'development') {
           const newClickedGate = clickedGate.clone()
@@ -196,6 +274,42 @@ const GatePalate = ({ size = 100, gateTypes = defaultGateTypes,
   const numRows = Math.ceil(gates.length / gatesPerRow);
   const canvasWidth = Math.min(gates.length, gatesPerRow) * (size + 10) + 10;
   const canvasHeight = numRows * (size + 10) + 10;
+  const resetGatePalate = useCallback(() => {
+    // Reset game over state
+    setIsGameOver(false);
+    
+    // Clear any active gate
+    if (activeGate) {
+      setActiveGate(null);
+      hideAlert();
+    }
+    
+    // Reset player state
+    setCurrentPlayer('Alice');
+    
+    // Reset all gates to initial state with fresh quantities
+    const newGates = initialGates(gateTypes, size);
+    setGates(newGates);
+    
+    // Reset canvas- Not sure if I need this yet actually
+    // const canvas = canvasRef.current;
+    // if (canvas) {
+    //   const ctx = canvas.getContext('2d');
+    //   ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // }
+  }, [size, gateTypes, activeGate, setActiveGate, hideAlert]);
+  
+  // Add listener for game reset event
+  useEffect(() => {
+    const handleGameReset = () => {
+      resetGatePalate();
+    };
+  
+    window.addEventListener('gameReset', handleGameReset);
+    return () => {
+      window.removeEventListener('gameReset', handleGameReset);
+    };
+  }, [resetGatePalate]);
 
   return (
     <div style={{
