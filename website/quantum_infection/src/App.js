@@ -21,6 +21,7 @@ function AppContent() {
   const [placedGates, setPlacedGates] = useState([]);
   const [showInstructions, setShowInstructions] = useState(true);
   const [rounds, setRounds] = useState(0);
+  const [winner, setWinner] = useState(null);
   const resetGame = useCallback(async () => {
     // Reset game state in boardUpdater
     resetGameState();
@@ -34,6 +35,7 @@ function AppContent() {
     setPlacedGates([]);
     setRounds(0);
     setBoardInfo(null);
+    setWinner(null);
     
     // Hide any active alerts
     hideAlert();
@@ -46,18 +48,32 @@ function AppContent() {
   const hideAlert = () => {
     setAlert(prev => ({ ...prev, show: false }));
   };
+  // this effect waits to hear back from the PlayerBoard, to see who actually won the game
+  useEffect(() => {
+    const handleWinner = (event) => {
+      setWinner(event.detail);
+      showAlert(
+        'success',
+        event.detail ? `Game Over, ${event.detail} wins!` : 'Game Over!',
+        'Congratulations! The game has ended. Take a moment to review the final board state.' +
+        '<br /><br />Click "Play Again" to start a new game, or review your moves before continuing.',
+        [{
+          label: 'Play Again',
+          onClick: resetGame
+        }]
+      );
+    };
+    window.addEventListener('gameWinner', handleWinner);
+    return () => {
+      window.removeEventListener('gameWinner', handleWinner);
+    };
+  }, []);
+  // This just sends out the waiting for the endgame
   const handleGameEnd = useCallback(() => {
-    showAlert(
-      'success',
-      'Game Over!',
-      'Congratulations! The game has ended. Take a moment to review the final board state.' + 
-      '<br /><br />Click "Play Again" to start a new game, or review your moves before continuing.',
-      [{
-        label: 'Play Again',
-        onClick: resetGame
-      }]
-    );
-  }, [showAlert, resetGame]);
+
+  }, [showAlert, resetGame, winner]);
+
+  
   // Add the event listener for endGame
   useEffect(() => {
     const endGameListener = () => {
@@ -77,7 +93,7 @@ function AppContent() {
     },
     {
       title: "Placing Gates",
-      content: "Select a gate from the palette on the right and click on the board to place it. Clicking on a gate opens a menu discussing it's use. With multi-qubit gates, once you start placing it down you can't stop until you've placed all the qubits, so be careful! To deselect a gate, click away! To select a new one instead, click on the new gate. Gates themselves will visually dim after several moves, but they are still present! To see the gates on a square, simply hover or click on it."
+      content: "Select a gate from the palette on the right and click on the board to place it. Clicking on a gate opens a menu discussing it's use. With multi-qubit gates, once you start placing it down you can't stop until you've placed all the qubits, so be careful! To deselect a gate, click away! To select a new one instead, click on the new gate. Gates themselves will visually dim after several moves, but they are still present! To see the gates on a square, simply hover or click on it. Just like in chess, this game is about touch moves."
     },
     {
       title: "Board Information",

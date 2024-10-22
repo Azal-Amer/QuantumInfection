@@ -33,7 +33,7 @@ const defaultGateTypes = [
      numQubits:1  },
   {
      type: 'H', 
-     qty: 10, 
+     qty: 6, 
      label: 'H', 
      color:[255, 255, 0],
      numQubits:1,

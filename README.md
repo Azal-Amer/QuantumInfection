@@ -185,6 +185,9 @@ In the python, the endgame methods had much debugging done, but hopefully it's s
 		- Additionally, modified the`draw()` function of the gate object, so that it now takes `inactive` as a parameter. That way I can deactivate gates visually at will
 - Implemented display at endGame, along with a Play again button which resets the board and player states. 
 	- Should also declare the winner, not yet implemented
+**Bugfixes**
+- The board initializing was occuring twice, so I put a lock on it so it could only happen once in a game
+- Gate-placing was also being called twice due to a poor condition setup. Now, it only occurs once. No effect on game logic is apparent, but did improve update speed.
 ## Python Notes
 
 

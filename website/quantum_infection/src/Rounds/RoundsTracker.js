@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 const RoundsTracker = () => {
   const [currentRound, setCurrentRound] = useState(0);
-  const MAX_ROUNDS = 2; // Or whatever your maximum round count is
+  const MAX_ROUNDS = 20; // Or whatever your maximum round count is
   const [currentPlayer, setCurrentPlayer] = useState('Alice');
   const handleEndgame = () => {
 
