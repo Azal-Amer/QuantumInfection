@@ -66,7 +66,7 @@ def gate(qc, qubits, op, state):
             qc.s(qubit)
             ancqc.s(qubit)
         print(f"Applied S gate to qubit(s) {qubits}")
-    elif op == "CNOT":
+    elif op == "C^x":
         if len(qubits) != 2:
             raise ValueError("CNOT gate requires exactly 2 qubits")
         qc.cx(qubits[0], qubits[1])

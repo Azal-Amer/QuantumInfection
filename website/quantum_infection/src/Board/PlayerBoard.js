@@ -86,9 +86,11 @@ const PlayerBoard = forwardRef(({ activeGate,
       const winner = board.findWinner();
       console.log('winner', winner);
       // Dispatch custom event with winner information
-      window.dispatchEvent(new CustomEvent('gameWinner', { 
-        detail: winner === 0 ? 'Red' : 'Blue' 
+      // if the winner is 0 (Red), dispatch 'Red', if 1 dispatch 'Blue', if -1 dispatch 'Tie'
+      window.dispatchEvent(new CustomEvent('gameWinner', {
+        detail: winner === 0 ? 'Red' : winner === 1 ? 'Blue' : 'Nobody'
       }));
+
     };
   
     window.addEventListener('endGame', handleEndGame);

@@ -19,7 +19,6 @@ export class Gate {
 
   
     drawGate(ctx,inactive) {
-      console.log('drawing',inactive);
       // console.log("Alice's Quantity:", this.aliceQty);
       // console.log("Bob's Quantity:", this.bobQty);
       ctx.fillStyle = `rgb(${this.color[0]}, ${this.color[1]}, ${this.color[2]})`;
@@ -28,7 +27,7 @@ export class Gate {
       ctx.font = `${this.size / 3}px Arial`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(this.type, this.x + this.size / 2, this.y + this.size / 2);
+      ctx.fillText(this.label, this.x + this.size / 2, this.y + this.size / 2);
       // On the bottom left of the gate, display the qty
       if(this.qty!=null){
         // put a black circle behind the qty

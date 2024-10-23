@@ -67,7 +67,6 @@ export class BoardSpaces {
     }
     updateProbabilities(probabilities){
         // Once the game ends, we should prevent any probabilities from being updated
-        console.log("Locked",this.locked);
         if(this.locked==false){
             console.log("Updating probabilities",probabilities);
         // Update the probabilities of each space
@@ -105,8 +104,12 @@ export class BoardSpaces {
         console.log("Zero wins:",zeroWins,"One wins:",oneWins);
         if(zeroWins > oneWins){
             return 0;
-        } else {
+        } 
+        else if(oneWins > zeroWins){
             return 1;
+        }
+        else{
+            return -1;
         }
     }
     update(){
@@ -128,8 +131,9 @@ export class BoardSpaces {
         return clone;
         
         
-        
+
        
     }
 }
+
 // export default BoardSpaces,space;
