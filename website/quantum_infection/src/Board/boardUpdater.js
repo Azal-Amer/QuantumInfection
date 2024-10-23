@@ -1,5 +1,4 @@
 let isGameOver = false;
-
 function checkGameOver() {
   if (isGameOver) {
     console.log('Game is over. No further operations allowed.');
@@ -11,7 +10,6 @@ function checkGameOver() {
 export function endBoardUpdater(board, setBoard) {
   console.log('endBoardUpdater called');
   if (checkGameOver()) return;
-
   isGameOver = true; // Set the game over flag immediately
 
   return fetch('http://127.0.0.1:5000/end_game', {
@@ -33,7 +31,6 @@ export function endBoardUpdater(board, setBoard) {
 }
 
 export function boardUpdater(board, setBoard, gate) {
-  console.log('Board updater called with gate:', gate);
   if (checkGameOver()) return;
 
   const qubits = gate.qubits;
@@ -101,6 +98,8 @@ export function serverBoardInitializer(plusSpaces, minusSpaces) {
       return false;
     });
 }
+
+
 
 // Function to reset the game state (use this when starting a new game)
 export function resetGameState() {

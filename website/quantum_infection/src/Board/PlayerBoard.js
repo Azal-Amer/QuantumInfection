@@ -80,20 +80,24 @@ const PlayerBoard = forwardRef(({ activeGate,
   const [clickedSquare, setClickedSquare] = useState(null);
   // Clicked square, self explanatory
   useEffect(() => {
-    const handleEndGame = () => {
-      endBoardUpdater(board, setBoard);
+    const handleEndGame = async () => {
+      await endBoardUpdater(board, setBoard);
       console.log(board.locked);
+      const winner = board.findWinner();
+      console.log('winner', winner);
+      // Dispatch custom event with winner information
+      // if the winner is 0 (Red), dispatch 'Red', if 1 dispatch 'Blue', if -1 dispatch 'Tie'
+      window.dispatchEvent(new CustomEvent('gameWinner', {
+        detail: winner === 0 ? 'Red' : winner === 1 ? 'Blue' : 'Nobody'
+      }));
+
     };
-
-    // Add event listener
+  
     window.addEventListener('endGame', handleEndGame);
-
-    // Cleanup function to remove event listener
     return () => {
       window.removeEventListener('endGame', handleEndGame);
     };
-  }, [board, setBoard]); //
-
+  }, [board, setBoard]);
 
   useEffect(() => {
     drawBoard();
@@ -331,13 +335,14 @@ const PlayerBoard = forwardRef(({ activeGate,
           }
           activeGate.qubits.push(clickedSquare);
           
+          
           activeGate.updateGate();
+
           if(activeGateUses === (activeGate.numQubits-1) ){
             setActiveGate(null); 
             hideAlert();
             setActiveGateUses(0);
             boardUpdater(board,setBoard,activeGate);
-
             
             board.update()
             console.log('Active Gate is now null');

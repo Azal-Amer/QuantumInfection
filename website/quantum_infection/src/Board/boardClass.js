@@ -22,7 +22,8 @@ export function getColorForProbability(probability, color1, color2, prob1, prob2
     
     // Convert to hex
     return '#' + interpolated.map(x => x.toString(16).padStart(2, '0')).join('');
-  }
+}
+
 //   Above functions were written by Claude 3.5 Sonnet
 
 export class Space {
@@ -66,7 +67,6 @@ export class BoardSpaces {
     }
     updateProbabilities(probabilities){
         // Once the game ends, we should prevent any probabilities from being updated
-        console.log("Locked",this.locked);
         if(this.locked==false){
             console.log("Updating probabilities",probabilities);
         // Update the probabilities of each space
@@ -87,6 +87,31 @@ export class BoardSpaces {
         }
         
     }
+    findWinner(){
+        // We want to go through each space, and then if the zeroState has a higher probability, it won the space, 
+        // if the oneState has a higher probability, it won the space
+        let zeroWins = 0;
+        let oneWins = 0;
+        for(let i = 0; i < this.size; i++){
+            for(let j = 0; j < this.size; j++){
+                if(this.spaces[i][j].zeroProb > this.spaces[i][j].oneProb){
+                    zeroWins++;
+                } else {
+                    oneWins++;
+                }
+            }
+        }
+        console.log("Zero wins:",zeroWins,"One wins:",oneWins);
+        if(zeroWins > oneWins){
+            return 0;
+        } 
+        else if(oneWins > zeroWins){
+            return 1;
+        }
+        else{
+            return -1;
+        }
+    }
     update(){
         for(let i = 0; i < this.size; i++){
             for(let j = 0; j < this.size; j++){
@@ -106,8 +131,9 @@ export class BoardSpaces {
         return clone;
         
         
-        
+
        
     }
 }
+
 // export default BoardSpaces,space;

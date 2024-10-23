@@ -8,8 +8,15 @@ import main  # Import your main.py file
 
 app = Flask(__name__)
 
-CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
-# Global variables to store game state
+CORS(app, 
+     resources={
+         r"/*": {
+             "origins": ["http://localhost:3000", "http://127.0.0.1:3000"],
+             "methods": ["GET", "POST", "OPTIONS"],
+             "allow_headers": ["Content-Type", "Authorization"],
+             "supports_credentials": True
+         }
+     })# Global variables to store game state
 logging.basicConfig(level=logging.DEBUG)
 quantum_circuit = None
 current_state = None

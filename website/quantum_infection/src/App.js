@@ -21,6 +21,7 @@ function AppContent() {
   const [placedGates, setPlacedGates] = useState([]);
   const [showInstructions, setShowInstructions] = useState(true);
   const [rounds, setRounds] = useState(0);
+  const [winner, setWinner] = useState(null);
   const resetGame = useCallback(async () => {
     // Reset game state in boardUpdater
     resetGameState();
@@ -34,6 +35,7 @@ function AppContent() {
     setPlacedGates([]);
     setRounds(0);
     setBoardInfo(null);
+    setWinner(null);
     
     // Hide any active alerts
     hideAlert();
@@ -46,18 +48,32 @@ function AppContent() {
   const hideAlert = () => {
     setAlert(prev => ({ ...prev, show: false }));
   };
+  // this effect waits to hear back from the PlayerBoard, to see who actually won the game
+  useEffect(() => {
+    const handleWinner = (event) => {
+      setWinner(event.detail);
+      showAlert(
+        'success',
+        event.detail ? `Game Over, ${event.detail} wins!` : 'Game Over!',
+        'Congratulations! The game has ended. Take a moment to review the final board state.' +
+        '<br /><br />Click "Play Again" to start a new game, or review your moves before continuing.',
+        [{
+          label: 'Play Again',
+          onClick: resetGame
+        }]
+      );
+    };
+    window.addEventListener('gameWinner', handleWinner);
+    return () => {
+      window.removeEventListener('gameWinner', handleWinner);
+    };
+  }, []);
+  // This just sends out the waiting for the endgame
   const handleGameEnd = useCallback(() => {
-    showAlert(
-      'success',
-      'Game Over!',
-      'Congratulations! The game has ended. Take a moment to review the final board state.' + 
-      '<br /><br />Click "Play Again" to start a new game, or review your moves before continuing.',
-      [{
-        label: 'Play Again',
-        onClick: resetGame
-      }]
-    );
-  }, [showAlert, resetGame]);
+
+  }, [showAlert, resetGame, winner]);
+
+  
   // Add the event listener for endGame
   useEffect(() => {
     const endGameListener = () => {
@@ -73,17 +89,16 @@ function AppContent() {
   const instructionsContent = [
     {
       title: "Welcome to Quantum Infection",
-      content: "To play, find a friend! There are two players: Alice and Bob. Both of you represent orthogonal states of a qubit, think the zero and one on a computer. In 20 rounds, a pesky scientist will come measure your quantum system. You want to own as many of the squares as possible when that happens. To do that, you need some quantum strategies."
+      content: "To play, find a friend! There are two players: Alice and Bob, competing to control quantum states. Alice aims to measure qubits in state $|1\\rangle$, while Bob aims for $|0\\rangle$. The game starts with a special pattern of plus ($|+\\rangle$) and minus ($|-\\rangle$) states, with corners set to $|0\\rangle$ and $|1\\rangle$. After 20 rounds, all qubits will be measured - try to control as many as possible!"
     },
     {
-      title: "Placing Gates",
-      content: "Select a gate from the palette on the right and click on the board to place it. Clicking on a gate opens a menu discussing it's use. With multi-qubit gates, once you start placing it down you can't stop until you've placed all the qubits, so be careful! To deselect a gate, click away! To select a new one instead, click on the new gate. Gates themselves will visually dim after several moves, but they are still present! To see the gates on a square, simply hover or click on it."
+      title: "Playing the Game",
+      content: "Each turn, you can apply one quantum gate to change the state of qubits. Single-qubit gates (H, X, Z, S) can only be applied to qubits adjacent to ones you control. Two-qubit gates (CNOT) can be used between any adjacent qubits if at least one is next to a controlled qubit. Some gates have limited uses - use them wisely! Once you start placing a multi-qubit gate, you must complete it."
     },
     {
       title: "Board Information",
-      content: "The board shows the current state of your qubits. Quantum mechanics uses probability amplitudes, but we can only show classical probability here (the difference will make more sense later). The probabilities represent the chance of measuring $|0\\rangle$ (Bob winning) and $|1\\rangle$ (Alice winning) states. Don't be decieved by the colors, behind the scenes it's all quantum!"
+      content: "The board shows probabilities of measuring each qubit as $|0\\rangle$ (blue, Bob) or $|1\\rangle$ (red, Alice). Hover over squares to see applied gates and exact probabilities. Darker colors mean higher probability of that player winning the square. The game uses quantum superposition, so outcomes aren't certain until measurement!"
     }
-    
   ];
 
   return (

@@ -69,12 +69,15 @@ def gate(qc, qubits, op, state, aliceTurn = True, bobTurn = False):
             qc.s(qubit)
             ancqc.s(qubit)
         print(f"Applied S gate to qubit(s) {qubits}")
-    elif op == "CNOT":
-        if probabilityOnControlAlice < .5 and aliceTurn:
-            raise ValueError("CNOT gate requires the control qubit mostly Alice's")
-        elif probabilityOnControlBob < .5 and bobTurn:
-            raise ValueError("CNOT gate requires the control qubit mostly Bob's")
+
+    elif op == "C^x":
+        if len(qubits) != 2:
+            raise ValueError("CNOT gate requires exactly 2 qubits")
+        qc.cx(qubits[0], qubits[1])
+        ancqc.cx(qubits[0], qubits[1])
+        print(f"Applied CNOT gate with control {qubits[0]} and target {qubits[1]}")
         
+
         if len(qubits) != 2:
             raise ValueError("CNOT gate requires exactly 2 qubits")
         qc.cx(qubits[0], qubits[1])

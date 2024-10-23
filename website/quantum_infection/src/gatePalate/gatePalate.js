@@ -33,19 +33,19 @@ const defaultGateTypes = [
      numQubits:1  },
   {
      type: 'H', 
-     qty: 10, 
+     qty: 6, 
      label: 'H', 
      color:[255, 255, 0],
      numQubits:1,
-     description : "The Hadamard gate will rotate your state 45 degrees"+
+     description : "The Hadamard gate will rotate your state 45 degrees. It is apart of the Clifford Gate set."+
      " <br />$$H = \\frac{1}{\\sqrt{2}} \\begin{pmatrix}1 & 1 \\\\1 & -1\\end{pmatrix}$$"  },
-     {type: 'CNOT',
+     {type: 'C^x',
       qty: 10,
       label: 'Cx',
-      kind: 'CNOT',
+      kind: 'Cx',
       color: [0, 255, 255],  // Cyan color
       numQubits: 2,  // CNOT operates on 2 qubits
-      description: "The CNOT (Controlled-NOT) gate flips the target qubit if the control qubit is |1⟩. It's a two-qubit gate essential for entanglement." +
+      description: "The CNOT (Controlled-NOT) gate flips the target qubit if the control qubit is |1⟩. It's a two-qubit gate essential for entanglement. It is apart of the Clifford Gate set" +
         " <br />$$CNOT = \\begin{pmatrix}1 & 0 & 0 & 0 \\\\0 & 1 & 0 & 0 \\\\0 & 0 & 0 & 1 \\\\0 & 0 & 1 & 0\\end{pmatrix}$$"
     },
     {type : 'T',
@@ -54,7 +54,7 @@ const defaultGateTypes = [
       kind: 'T',
       color:[255,128,0],
       numQubits:1,
-      description:"The T gate is apart of the Clifford Set. It is needed to access any possible Unitary."+
+      description:"The T gate is added to the Clifford Gates to allow them to be a universal gate set. It is needed to access any possible Unitary."+
       "<br />$$T = \\begin{pmatrix}1 & 0 \\\\0 & e^{i\\pi/4}\\end{pmatrix}$$",
     },
     {type : 'S',
@@ -81,7 +81,6 @@ const GatePalate = ({ size = 100, gateTypes = defaultGateTypes,
 
   useEffect(() => {
     const handleGameEnd = () => {
-      console.log('Game ended inside gatepalate');
       setIsGameOver(true);
       // Clear any active gate when game ends
       if (activeGate) {
@@ -91,11 +90,9 @@ const GatePalate = ({ size = 100, gateTypes = defaultGateTypes,
     };
   
     // Debug logging to verify listener setup
-    console.log('Setting up endGame listener in GatePalate');
     window.addEventListener('endGame', handleGameEnd);
   
     return () => {
-      console.log('Cleaning up endGame listener in GatePalate');
       window.removeEventListener('endGame', handleGameEnd);
     };
     // Remove dependencies that aren't needed for the listener setup
@@ -106,20 +103,17 @@ const GatePalate = ({ size = 100, gateTypes = defaultGateTypes,
   
   
 
-  const updateGateQuantities = useCallback((player) => {
+  const updateGateQuantities = useCallback(() => {
     setGates(prevGates => prevGates.map(gate => {
       const newGate = gate.clone();
-      console.log('Before Gate:', newGate);
       
       // newGate.qty = player === 'Alice' ? newGate.aliceQty : newGate.bobQty;
       newGate.qty=newGate.aliceQty;
 
-      console.log('New Gate:', newGate);
       // This is what switches the new quantity to newgate.qty. I'm hoping that setting property to another
       // would mean that it is just a reference
       return newGate;
     }));
-    console.log('Gates updated for player:', player);
   }, []);
 
   // This below effect will create the gates, we want to autopopulate with 
@@ -162,10 +156,8 @@ const GatePalate = ({ size = 100, gateTypes = defaultGateTypes,
    useEffect(() => {
     const handlePlayerChange = (event) => {
       const newPlayer = event.detail;
-      console.log('New player:', newPlayer);
       setCurrentPlayer(newPlayer);
       updateGateQuantities(newPlayer);
-      console.log('Gates:', gates);
     };
     
     window.addEventListener('playerChange', handlePlayerChange);
@@ -202,12 +194,10 @@ const GatePalate = ({ size = 100, gateTypes = defaultGateTypes,
       if (canvasRef.current && !canvasRef.current.contains(event.target) &&
           playerBoardRef.current && !playerBoardRef.current.contains(event.target)) {
         if (activeGate !== null) {
-          console.log('Active Gate:', activeGate);
           if (activeGateUses === 0) {
             // If we click away before we put a gate down, we can choose another gate
             setActiveGate(null);
             hideAlert();
-            console.log('Active gate is now null');
             setActiveGateUses(0);
           }
         }
