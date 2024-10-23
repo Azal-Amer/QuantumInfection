@@ -77,12 +77,6 @@ def gate(qc, qubits, op, state, aliceTurn = True, bobTurn = False):
         ancqc.cx(qubits[0], qubits[1])
         print(f"Applied CNOT gate with control {qubits[0]} and target {qubits[1]}")
         
-
-        if len(qubits) != 2:
-            raise ValueError("CNOT gate requires exactly 2 qubits")
-        qc.cx(qubits[0], qubits[1])
-        ancqc.cx(qubits[0], qubits[1])
-        print(f"Applied CNOT gate with control {qubits[0]} and target {qubits[1]}")
     elif op == "SWAP":
         if len(qubits) != 2:
             raise ValueError("SWAP gate requires exactly 2 qubits")
