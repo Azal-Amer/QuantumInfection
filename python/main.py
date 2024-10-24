@@ -70,13 +70,13 @@ def gate(qc, qubits, op, state, aliceTurn = True, bobTurn = False):
             ancqc.s(qubit)
         print(f"Applied S gate to qubit(s) {qubits}")
 
+
     elif op == "C^x":
         if len(qubits) != 2:
             raise ValueError("CNOT gate requires exactly 2 qubits")
         qc.cx(qubits[0], qubits[1])
         ancqc.cx(qubits[0], qubits[1])
         print(f"Applied CNOT gate with control {qubits[0]} and target {qubits[1]}")
-        
     elif op == "SWAP":
         if len(qubits) != 2:
             raise ValueError("SWAP gate requires exactly 2 qubits")
@@ -85,14 +85,13 @@ def gate(qc, qubits, op, state, aliceTurn = True, bobTurn = False):
         ancqc.swap(qubits[0], qubits[1])
         print(f"Applied SWAP gate between qubits {qubits[0]} and {qubits[1]}")
     
-    elif op == "CZ":
-        if len(qubits) != 2:
-            raise ValueError("CZ gate requires exactly 2 qubits")
+    elif op == "C^z":
+        override = True
         
         if probabilityOnControlAlice < .5 and aliceTurn:
-            raise ValueError("CZ gate requires the control qubit mostly Alice's")
+            print("CZ gate requires the control qubit mostly Alice's")
         elif probabilityOnControlBob < .5 and bobTurn:
-            raise ValueError("CZ gate requires the control qubit mostly Bob's")
+            print("CZ gate requires the control qubit mostly Bob's")
         
         qc.cz(qubits[0], qubits[1])
         ancqc.cz(qubits[0], qubits[1])
@@ -185,7 +184,8 @@ def resultInterpreter(counts):
         if counts[key] > highest:
             highest = counts[key]
             highestKey = key
-    print(highest)
+    print("Highest key: ", highestKey)
+    print("Counts: ", highest)
     return highestKey
 
         
