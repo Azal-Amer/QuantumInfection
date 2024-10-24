@@ -77,7 +77,6 @@ def gate(qc, qubits, op, state, aliceTurn = True, bobTurn = False):
         qc.cx(qubits[0], qubits[1])
         ancqc.cx(qubits[0], qubits[1])
         print(f"Applied CNOT gate with control {qubits[0]} and target {qubits[1]}")
-
     elif op == "SWAP":
         if len(qubits) != 2:
             raise ValueError("SWAP gate requires exactly 2 qubits")
@@ -88,7 +87,6 @@ def gate(qc, qubits, op, state, aliceTurn = True, bobTurn = False):
     
     elif op == "C^z":
         override = True
-
         
         if probabilityOnControlAlice < .5 and aliceTurn:
             print("CZ gate requires the control qubit mostly Alice's")
