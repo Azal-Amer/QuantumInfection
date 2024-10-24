@@ -102,7 +102,9 @@ function AppContent() {
   ];
 
   return (
+      
       <div className="App">
+        
       <header className="App-header">
         <div className="layout-container">
           <div className="left-container">
