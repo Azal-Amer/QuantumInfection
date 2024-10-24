@@ -8,16 +8,25 @@ import os
 import main  # Import your main.py file
 
 app = Flask(__name__, static_folder='build', static_url_path='')
+def get_ip_addresses():
+    """Get all available IP addresses where the server can be accessed"""
+    addresses = ['localhost', '127.0.0.1']
+    try:
+        # Get hostname and associated IP address
+        hostname = socket.gethostname()
+        host_ip = socket.gethostbyname(hostname)
+        if host_ip not in addresses:
+            addresses.append(host_ip)
+        
+        # Get all network interfaces
+        for interface in socket.getaddrinfo(hostname, None):
+            ip = interface[4][0]
+            if ip not in addresses and not ip.startswith('fe80:'): # Exclude IPv6 link-local
+                addresses.append(ip)
+    except:
+        pass
+    return addresses
 
-# CORS(app, 
-#      resources={
-#          r"/*": {
-#              "origins": ["http://localhost:5000", "http://127.0.0.1:5000"],
-#              "methods": ["GET", "POST", "OPTIONS"],
-#              "allow_headers": ["Content-Type", "Authorization"],
-#              "supports_credentials": True
-#          }
-#      })
 CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 # Global variables to store game state
 
@@ -206,22 +215,44 @@ def end_game():
         "message": "Game ended",
         "probabilities": probabilities
     }),200
-
 if __name__ == '__main__':
+    port = 5000
+    
     # Check if build folder exists
     if not os.path.exists(app.static_folder):
-        print(f"Error: Build folder not found at {app.static_folder}")
+        print(f"\n❌ Error: Build folder not found at {app.static_folder}")
         print("Please ensure the React app build files are in the ./build directory")
         exit(1)
         
     if not os.path.exists(os.path.join(app.static_folder, 'index.html')):
-        print("Error: index.html not found in build folder")
+        print("\n❌ Error: index.html not found in build folder")
         print("Please ensure the React app build files are in the ./build directory")
         exit(1)
-    print(os.path.join(app.static_folder, 'index.html'))
+    
+    # Print server information
     print("\n=== Quantum Game Server ===")
     print("Starting server...")
-    print("Website available at: http://http://127.0.0.1:5000")
-    print("Press Ctrl+C to stop the server")
+    
+    # Get and display all available URLs
+    addresses = get_ip_addresses()
+    print("\n🌐 The game is available at:")
+
+    
+    print("\n💡 Note: Some addresses might not work depending on your network configuration")
+    print("   Try another if one doesn't work.")
+    print("\n⌨️  Press Ctrl+C to stop the server")
     print("========================\n")
-    app.run(debug=True, port=5000)
+    
+    try:
+        # Run the server on all interfaces
+        app.run(host='0.0.0.0', port=port, debug=True)
+    except OSError as e:
+        if "Address already in use" in str(e):
+            print(f"\n❌ Error: Port {port} is already in use.")
+            print("Please close any other running servers or choose a different port.")
+        else:
+            print(f"\n❌ Error: {str(e)}")
+        exit(1)
+    except KeyboardInterrupt:
+        print("\n\n👋 Server stopped by user")
+        exit(0)
