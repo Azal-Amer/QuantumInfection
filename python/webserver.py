@@ -236,7 +236,8 @@ if __name__ == '__main__':
     # Get and display all available URLs
     addresses = get_ip_addresses()
     print("\n🌐 The game is available at:")
-
+    for addr in addresses:
+        print(f"  http://{addr}:{port}")
     
     print("\n💡 Note: Some addresses might not work depending on your network configuration")
     print("   Try another if one doesn't work.")
