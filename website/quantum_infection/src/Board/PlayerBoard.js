@@ -522,7 +522,7 @@ function spaceUpdater(board,setBoardInfo,square,label){
 function currentGateColor(distance, color) {
   const maxDist = 15;
     if (distance > maxDist) {
-        distance = maxDist*.92;
+        distance = maxDist*.8;
     }
 
     const saturation = .9 - (distance / 20); // Starts at 0.5, decreases to 0

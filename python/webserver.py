@@ -1,27 +1,49 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify,send_from_directory
 from flask_cors import CORS
 from qiskit import QuantumCircuit
 from qiskit.quantum_info import Statevector
 from qiskit_aer import Aer
 import logging
+import os
 import main  # Import your main.py file
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='build', static_url_path='')
 
-CORS(app, 
-     resources={
-         r"/*": {
-             "origins": ["http://localhost:3000", "http://127.0.0.1:3000"],
-             "methods": ["GET", "POST", "OPTIONS"],
-             "allow_headers": ["Content-Type", "Authorization"],
-             "supports_credentials": True
-         }
-     })# Global variables to store game state
+# CORS(app, 
+#      resources={
+#          r"/*": {
+#              "origins": ["http://localhost:5000", "http://127.0.0.1:5000"],
+#              "methods": ["GET", "POST", "OPTIONS"],
+#              "allow_headers": ["Content-Type", "Authorization"],
+#              "supports_credentials": True
+#          }
+#      })
+CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
+# Global variables to store game state
+
 logging.basicConfig(level=logging.DEBUG)
 quantum_circuit = None
 current_state = None
 turn_count = 0
 measured_qubits = set()
+
+
+@app.route('/')
+def serve():
+    print("Serving index.html")
+    return send_from_directory(app.static_folder, 'index.html')
+# Catch all routes and redirect to index.html for client-side routing
+@app.route('/static/<path:path>')
+def serve_static(path):
+    return send_from_directory(os.path.join(app.static_folder, 'static'), path)
+
+# Catch all routes to handle React Router
+@app.route('/<path:path>')
+def catch_all(path):
+    if os.path.isfile(os.path.join(app.static_folder, path)):
+        return send_from_directory(app.static_folder, path)
+    return send_from_directory(app.static_folder, 'index.html')
+
 
 def qubit_from_square(column, row):
     return 4 * row + column
@@ -186,4 +208,20 @@ def end_game():
     }),200
 
 if __name__ == '__main__':
-    app.run(debug=True,port = 5000)
+    # Check if build folder exists
+    if not os.path.exists(app.static_folder):
+        print(f"Error: Build folder not found at {app.static_folder}")
+        print("Please ensure the React app build files are in the ./build directory")
+        exit(1)
+        
+    if not os.path.exists(os.path.join(app.static_folder, 'index.html')):
+        print("Error: index.html not found in build folder")
+        print("Please ensure the React app build files are in the ./build directory")
+        exit(1)
+    print(os.path.join(app.static_folder, 'index.html'))
+    print("\n=== Quantum Game Server ===")
+    print("Starting server...")
+    print("Website available at: http://http://127.0.0.1:5000")
+    print("Press Ctrl+C to stop the server")
+    print("========================\n")
+    app.run(debug=True, port=5000)

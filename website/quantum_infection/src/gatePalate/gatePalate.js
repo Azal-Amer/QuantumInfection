@@ -65,6 +65,15 @@ const defaultGateTypes = [
       numQubits:1,
       description:"The S gate is apart of the Clifford Set. It is needed to access any possible Unitary."+
       "<br />$$T = \\begin{pmatrix}1 & 0 \\\\0 & i\\end{pmatrix}$$",
+    },
+    {type: 'C^z',
+      qty: 10,
+      label: 'Cz',
+      kind: 'Cz',
+      color: [0, 255, 128],  // Cyan color
+      numQubits: 2,  // CNOT operates on 2 qubits
+      description: "The CZ (Controlled-Z) gate flips the amplitude on the |1⟩ component of the target, if the control qubit is |1⟩. It's a two-qubit gate, which are essential for entanglement. " +
+        " <br />$$CNOT = \\begin{pmatrix}1 & 0 & 0 & 0 \\\\0 & 1 & 0 & 0 \\\\0& 0 & 1 & 0 \\\\0 & 0 & 0 & -1\\end{pmatrix}$$"
     }
 ];
 const GatePalate = ({ size = 100, gateTypes = defaultGateTypes, 
