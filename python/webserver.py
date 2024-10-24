@@ -26,6 +26,7 @@ def get_ip_addresses():
     except:
         pass
     return addresses
+# The above just needs to check what localhosts we're able to use and sets it up
 
 CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 # Global variables to store game state

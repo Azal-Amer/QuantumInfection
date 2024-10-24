@@ -55,7 +55,7 @@
   display: flex;
   width: 75%;
   height: 100vh;
-  align-items: center;
+  align-items: left;
   justify-content: center;
   /* the flexboxes only take what they need */
 }
@@ -64,7 +64,7 @@
   flex: 3;
   display: flex;
   padding-left: 5%;
-  justify-content: center;
+  justify-content: left;
   align-items: center;
   /* lock this in place on position, on left */
   position: flex;
