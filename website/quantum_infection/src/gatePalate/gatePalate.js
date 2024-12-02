@@ -4,7 +4,7 @@ import { Gate } from './gate.js';
 
 const defaultGateTypes = [
   { type: 'X',
-     qty: null, 
+     qty: 6, 
      label: 'X', 
      kind: 'X',
     color: [0, 0, 255],

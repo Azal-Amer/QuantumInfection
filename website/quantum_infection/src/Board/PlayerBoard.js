@@ -58,11 +58,11 @@ function customTypeBoard(board, size,) {
   
   board.accessSpace(0,0).zeroProb = 1;
   board.accessSpace(0,0).oneProb = 0;
-  board.accessSpace(0,0).state = 'H';
+  board.accessSpace(0,0).state = '0';
   board.accessSpace(0,0).updateState();
   board.accessSpace(size-1,size-1).zeroProb = 0;
   board.accessSpace(size-1,size-1).oneProb = 1;
-  board.accessSpace(size-1,size-1).state = 'V';
+  board.accessSpace(size-1,size-1).state = '1';
   board.accessSpace(size-1,size-1).updateState();
   return board;
 }
