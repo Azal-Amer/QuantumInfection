@@ -31,8 +31,8 @@ function AppContent() {
         kind: 'w',
         color: [147, 112, 219],  // Medium purple for Weinberg gates
         numQubits: 1,
-        description: "The Weinberg gate is a nonlinear two-qubit gate that performs an exponential transformation on the target qubit based on the control qubit. It is a fundamental building block for nonlinear quantum algorithms." +
-        " <br />For state $$|x,y\\rangle$$, it performs the mapping: $$|x,y\\rangle \\rightarrow |x,e^{ixy}y\\rangle$$" +
+        description: "The Weinberg gate is a nonlinear two-qubit gate that performs an exponential transformation on the target qubit based on the control qubit." +
+        " <br />For state $$|\\psi\\rangle$$, it performs the mapping:<br /> $$F(|\\psi\\rangle)=|\\psi{e^{i\\left|\\psi\\right|^{2}}}\\rangle$$" +
         " <br />This gate allows polynomial-time solution of NP-complete problems through nonlinear evolution."
     },
     {
@@ -42,8 +42,8 @@ function AppContent() {
         kind: 'g',
         color: [138, 43, 226],  // Blue violet for polynomial gates
         numQubits: 2,
-        description: "The G (polynomial) gate is a nonlinear two-qubit gate that performs a quadratic transformation preserving the 2-norm. It enables powerful nonlinear quantum algorithms." +
-        " <br />For state $$|x,y\\rangle$$, it performs the mapping: $$|x,y\\rangle \\rightarrow |x, \\frac{x^2 - y^2}{2Re(xy)}y\\rangle$$" +
+        description: "The G (polynomial) gate is a nonlinear two-qubit gate that performs a quadratic transformation preserving the 2-norm." +
+        " <br />For state $$|x,y\\rangle$$, it performs the mapping: <br />$$|x,y\\rangle \\rightarrow |x, \\frac{x^2 - y^2}{2Re(xy)}y\\rangle$$" +
         " <br />This gate can be used to implement arbitrary nonlinear transformations when combined with linear gates."
     },
     {
@@ -53,7 +53,7 @@ function AppContent() {
         kind: 'n', 
         color: [186, 85, 211],  // Medium orchid for AND-type gates
         numQubits: 2,
-        description: "The N gate is a distinctly nonlinear transformation that acts like a quantum AND operation. It forms the basis for solving NP-complete problems in polynomial time." +
+        description: "The N gate is a distinctly nonlinear transformation that acts like a quantum AND operation." +
         " <br />It transforms states as follows:" +
         " <br />$$|00\\rangle + |11\\rangle \\rightarrow |01\\rangle + |11\\rangle$$" +
         " <br />$$|01\\rangle + |10\\rangle \\rightarrow |01\\rangle + |11\\rangle$$" +
