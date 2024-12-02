@@ -30,7 +30,7 @@ function AppContent() {
         label: 'W',
         kind: 'w',
         color: [147, 112, 219],  // Medium purple for Weinberg gates
-        numQubits: 2,
+        numQubits: 1,
         description: "The Weinberg gate is a nonlinear two-qubit gate that performs an exponential transformation on the target qubit based on the control qubit. It is a fundamental building block for nonlinear quantum algorithms." +
         " <br />For state $$|x,y\\rangle$$, it performs the mapping: $$|x,y\\rangle \\rightarrow |x,e^{ixy}y\\rangle$$" +
         " <br />This gate allows polynomial-time solution of NP-complete problems through nonlinear evolution."

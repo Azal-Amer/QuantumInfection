@@ -1,7 +1,9 @@
 
 let isGameOver = false;
+var math = require("mathjs");
 
 let initialized = false;
+import { NonLinearQuantumCircuit } from './NonLinearQuantumCircuit';
 let circuit = null;
 function checkGameOver() {
   if (isGameOver) {
@@ -61,7 +63,7 @@ export function serverBoardInitializer(plusSpaces, minusSpaces) {
   if (checkGameOver()) return Promise.resolve(false);
   if(initialized){ return Promise.resolve(true); }
   const SIZE = 4;
-  circuit = new window.QuantumCircuit(SIZE**2);
+  circuit = new NonLinearQuantumCircuit(SIZE**2);
   // This needs to be size adaptable TODO
   circuit.appendGate('x', (SIZE**2)-1);
   // Setting first state to |1>
@@ -74,6 +76,18 @@ export function serverBoardInitializer(plusSpaces, minusSpaces) {
     circuit.appendGate("h", i);
     console.log(i);
   }
+  
+    circuit.addNonLinearGateType("w", (state, probability) => {
+      const phase = math.complex(
+          Math.cos(probability * Math.PI * 2),
+          Math.sin(probability * Math.PI * 2)
+      );
+      console.log('state before w',state)
+      // const angle = math.multiply(math.complex(0,1),probability*2*math.pi)
+      // const phase = math.exp(angle);
+      // const phase =math.exp(math.multiply(math.complex(0,1), probability * 2 * math.pi))
+      return math.multiply(state, phase); // Apply the phase
+  });
   
 
   console.log('Initializing board with plusSpaces:', plusSpaces, 'and minusSpaces:', minusSpaces);
