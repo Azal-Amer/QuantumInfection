@@ -2,82 +2,8 @@ import React, { useRef, useEffect, useState,useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { Gate } from './gate.js';
 
-const defaultGateTypes = [
-  { type: 'X',
-     qty: 6, 
-     label: 'X', 
-     kind: 'x',
-    color: [0, 0, 255],
-    numQubits:1 ,
-    description : "The X gate will flip any state, amplitudes on zero go to one, and vice versa."+
-    " <br />$$X = \\begin{pmatrix}0 & 1 \\\\1 & 0\\end{pmatrix}$$"
-  },
-
-  { type: 'Y', 
-    qty: null, 
-    label: 'Y',
-    kind: 'y',
-     color: 
-    [255, 0, 0],
-    description : "The Y gate will rotate your state 90 degrees around the Y axis, providing a phase shift"+
-    "  <br />$$Y = \\begin{pmatrix}0 & -i \\\\i & 0\\end{pmatrix}$$",
-    numQubits:1  },
-  { type: 'Z',
-     qty: null, 
-     label: 'Z',
-     kind: 'z',
-      color:
-     [0, 255, 0],
-     description : "The Z gate will throw a -1 on your 1 state, and leave your 0 state alone"+
-     " <br />$$Z = \\begin{pmatrix}1 & 0 \\\\0 & -1\\end{pmatrix}$$",
-     numQubits:1  },
-  {
-     type: 'H', 
-     qty: 6, 
-     label: 'H', 
-     kind: 'h',
-     color:[255, 255, 0],
-     numQubits:1,
-     description : "The Hadamard gate will rotate your state 45 degrees. It is apart of the Clifford Gate set."+
-     " <br />$$H = \\frac{1}{\\sqrt{2}} \\begin{pmatrix}1 & 1 \\\\1 & -1\\end{pmatrix}$$"  },
-     {type: 'C^x',
-      qty: 10,
-      label: 'Cx',
-      kind: 'cx',
-      color: [0, 255, 255],  // Cyan color
-      numQubits: 2,  // CNOT operates on 2 qubits
-      description: "The CNOT (Controlled-NOT) gate flips the target qubit if the control qubit is |1⟩. It's a two-qubit gate essential for entanglement. It is apart of the Clifford Gate set" +
-        " <br />$$CNOT = \\begin{pmatrix}1 & 0 & 0 & 0 \\\\0 & 1 & 0 & 0 \\\\0 & 0 & 0 & 1 \\\\0 & 0 & 1 & 0\\end{pmatrix}$$"
-    },
-    {type : 'T',
-      qty:null,
-      label:'T',
-      kind: 't',
-      color:[255,128,0],
-      numQubits:1,
-      description:"The T gate is added to the Clifford Gates to allow them to be a universal gate set. It is needed to access any possible Unitary."+
-      "<br />$$T = \\begin{pmatrix}1 & 0 \\\\0 & e^{i\\pi/4}\\end{pmatrix}$$",
-    },
-    {type : 'S',
-      qty:null,
-      label:'S',
-      kind: 's',
-      color:[255,0,128],
-      numQubits:1,
-      description:"The S gate is apart of the Clifford Set. It is needed to access any possible Unitary."+
-      "<br />$$T = \\begin{pmatrix}1 & 0 \\\\0 & i\\end{pmatrix}$$",
-    },
-    {type: 'C^z',
-      qty: 10,
-      label: 'Cz',
-      kind: 'cz',
-      color: [0, 255, 128],  // Cyan color
-      numQubits: 2,  // CNOT operates on 2 qubits
-      description: "The CZ (Controlled-Z) gate flips the amplitude on the |1⟩ component of the target, if the control qubit is |1⟩. It's a two-qubit gate, which are essential for entanglement. " +
-        " <br />$$CNOT = \\begin{pmatrix}1 & 0 & 0 & 0 \\\\0 & 1 & 0 & 0 \\\\0& 0 & 1 & 0 \\\\0 & 0 & 0 & -1\\end{pmatrix}$$"
-    },
-];
-const GatePalate = ({ size = 80, gateTypes = defaultGateTypes, 
+const gatesPerRow = 2;
+const GatePalate = ({ size = 80, gateTypes, 
   activeGate, setActiveGate, playerBoardRef,activeGateUses,
   setActiveGateUses,showAlert,hideAlert }) => {
   
@@ -129,7 +55,7 @@ const GatePalate = ({ size = 80, gateTypes = defaultGateTypes,
   // This below effect will create the gates, we want to autopopulate with 
   // rows of 4. This WONT draw the gates, but it will create them and space them out
   function initialGates(gateTypes, size) {
-    const gatesPerRow = 4;
+    
     return gateTypes.map((gate, index) => {
       const row = Math.floor(index / gatesPerRow);
       const col = index % gatesPerRow;
@@ -198,18 +124,25 @@ const GatePalate = ({ size = 80, gateTypes = defaultGateTypes,
     });
   }, [gates, activeGate]);
 
-// This one will handle the clicking away from the gate
   useEffect(() => {
     const handleOutsideClick = (event) => {
+      // First, let's check if we clicked on any gate palette or selection UI
+      const isGatePaletteClick = event.target.closest('.gate-palate-container'); // Add this class to your gate palette containers
+      const isGateSelectionClick = event.target.closest('.gate-palate-container'); // Add this class to any other gate selection UI elements
+  
+      // If we clicked within any gate selection UI, don't treat it as an outside click
+      if (isGatePaletteClick || isGateSelectionClick) {
+        return;
+      }
+  
+      // Now check if we clicked outside both the canvas and player board
       if (canvasRef.current && !canvasRef.current.contains(event.target) &&
           playerBoardRef.current && !playerBoardRef.current.contains(event.target)) {
-        if (activeGate !== null) {
-          if (activeGateUses === 0) {
-            // If we click away before we put a gate down, we can choose another gate
-            setActiveGate(null);
-            hideAlert();
-            setActiveGateUses(0);
-          }
+        if (activeGate !== null && activeGateUses === 0) {
+          setActiveGate(null);
+          console.log('outside click');
+          hideAlert();
+          setActiveGateUses(0);
         }
       }
     };
@@ -219,8 +152,6 @@ const GatePalate = ({ size = 80, gateTypes = defaultGateTypes,
       window.removeEventListener('click', handleOutsideClick);
     };
   }, [activeGate, activeGateUses, setActiveGate, setActiveGateUses, playerBoardRef]);
-
-
     
     
   //   // If we click away, then the gate uses are zero
@@ -261,9 +192,9 @@ const GatePalate = ({ size = 80, gateTypes = defaultGateTypes,
             'You have selected '+activeGateUses+' / '+newClickedGate.numQubits+' qubits'+'<br />' + newClickedGate.description);
           if (process.env.NODE_ENV === 'development') {
             
-            // console.log('Active Gate:', activeGate);
-            // console.log('Clicked Gate:', newClickedGate);
-            // console.log('Active Gate:', newClickedGate.label);
+            console.log('Active Gate:', activeGate);
+            console.log('Clicked Gate:', newClickedGate);
+            console.log('Active Gate:', newClickedGate.label);
           }
           
         }
@@ -272,7 +203,6 @@ const GatePalate = ({ size = 80, gateTypes = defaultGateTypes,
   }, [gates, activeGate, activeGateUses, showAlert, setActiveGate, setActiveGateUses]);
   
 
-  const gatesPerRow = 4;
   const numRows = Math.ceil(gates.length / gatesPerRow);
   const canvasWidth = Math.min(gates.length, gatesPerRow) * (size + 10) + 10;
   const canvasHeight = numRows * (size + 10) + 10;
@@ -283,6 +213,7 @@ const GatePalate = ({ size = 80, gateTypes = defaultGateTypes,
     // Clear any active gate
     if (activeGate) {
       setActiveGate(null);
+      console.log('Active Gate:', activeGate);
       hideAlert();
     }
     

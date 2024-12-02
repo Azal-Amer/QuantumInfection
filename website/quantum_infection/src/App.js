@@ -22,6 +22,119 @@ function AppContent() {
   const [showInstructions, setShowInstructions] = useState(true);
   const [rounds, setRounds] = useState(0);
   const [winner, setWinner] = useState(null);
+  const  defaultGateTypes = [
+    { type: 'X',
+       qty: 6, 
+       label: 'X', 
+       kind: 'x',
+      color: [0, 0, 255],
+      numQubits:1 ,
+      description : "The X gate will flip any state, amplitudes on zero go to one, and vice versa."+
+      " <br />$$X = \\begin{pmatrix}0 & 1 \\\\1 & 0\\end{pmatrix}$$"
+    },
+  
+    { type: 'Y', 
+      qty: null, 
+      label: 'Y',
+      kind: 'y',
+       color: 
+      [255, 0, 0],
+      description : "The Y gate will rotate your state 90 degrees around the Y axis, providing a phase shift"+
+      "  <br />$$Y = \\begin{pmatrix}0 & -i \\\\i & 0\\end{pmatrix}$$",
+      numQubits:1  },
+    { type: 'Z',
+       qty: null, 
+       label: 'Z',
+       kind: 'z',
+        color:
+       [0, 255, 0],
+       description : "The Z gate will throw a -1 on your 1 state, and leave your 0 state alone"+
+       " <br />$$Z = \\begin{pmatrix}1 & 0 \\\\0 & -1\\end{pmatrix}$$",
+       numQubits:1  },
+    {
+       type: 'H', 
+       qty: 6, 
+       label: 'H', 
+       kind: 'h',
+       color:[255, 255, 0],
+       numQubits:1,
+       description : "The Hadamard gate will rotate your state 45 degrees. It is apart of the Clifford Gate set."+
+       " <br />$$H = \\frac{1}{\\sqrt{2}} \\begin{pmatrix}1 & 1 \\\\1 & -1\\end{pmatrix}$$"  },
+       {type: 'C^x',
+        qty: 10,
+        label: 'Cx',
+        kind: 'cx',
+        color: [0, 255, 255],  // Cyan color
+        numQubits: 2,  // CNOT operates on 2 qubits
+        description: "The CNOT (Controlled-NOT) gate flips the target qubit if the control qubit is |1⟩. It's a two-qubit gate essential for entanglement. It is apart of the Clifford Gate set" +
+          " <br />$$CNOT = \\begin{pmatrix}1 & 0 & 0 & 0 \\\\0 & 1 & 0 & 0 \\\\0 & 0 & 0 & 1 \\\\0 & 0 & 1 & 0\\end{pmatrix}$$"
+      },
+      {type : 'T',
+        qty:null,
+        label:'T',
+        kind: 't',
+        color:[255,128,0],
+        numQubits:1,
+        description:"The T gate is added to the Clifford Gates to allow them to be a universal gate set. It is needed to access any possible Unitary."+
+        "<br />$$T = \\begin{pmatrix}1 & 0 \\\\0 & e^{i\\pi/4}\\end{pmatrix}$$",
+      },
+      {type : 'S',
+        qty:null,
+        label:'S',
+        kind: 's',
+        color:[255,0,128],
+        numQubits:1,
+        description:"The S gate is apart of the Clifford Set. It is needed to access any possible Unitary."+
+        "<br />$$T = \\begin{pmatrix}1 & 0 \\\\0 & i\\end{pmatrix}$$",
+      },
+      {type: 'C^z',
+        qty: 10,
+        label: 'Cz',
+        kind: 'cz',
+        color: [0, 255, 128],  // Cyan color
+        numQubits: 2,  // CNOT operates on 2 qubits
+        description: "The CZ (Controlled-Z) gate flips the amplitude on the |1⟩ component of the target, if the control qubit is |1⟩. It's a two-qubit gate, which are essential for entanglement. " +
+          " <br />$$CNOT = \\begin{pmatrix}1 & 0 & 0 & 0 \\\\0 & 1 & 0 & 0 \\\\0& 0 & 1 & 0 \\\\0 & 0 & 0 & -1\\end{pmatrix}$$"
+      },
+  ];
+  const nonlinearGateTypes = [
+    {
+        type: 'W',  // Weinberg gate
+        qty: 4,
+        label: 'W',
+        kind: 'w',
+        color: [147, 112, 219],  // Medium purple for Weinberg gates
+        numQubits: 2,
+        description: "The Weinberg gate is a nonlinear two-qubit gate that performs an exponential transformation on the target qubit based on the control qubit. It is a fundamental building block for nonlinear quantum algorithms." +
+        " <br />For state $$|x,y\\rangle$$, it performs the mapping: $$|x,y\\rangle \\rightarrow |x,e^{ixy}y\\rangle$$" +
+        " <br />This gate allows polynomial-time solution of NP-complete problems through nonlinear evolution."
+    },
+    {
+        type: 'G',  // Polynomial gate
+        qty: 4, 
+        label: 'G',
+        kind: 'g',
+        color: [138, 43, 226],  // Blue violet for polynomial gates
+        numQubits: 2,
+        description: "The G (polynomial) gate is a nonlinear two-qubit gate that performs a quadratic transformation preserving the 2-norm. It enables powerful nonlinear quantum algorithms." +
+        " <br />For state $$|x,y\\rangle$$, it performs the mapping: $$|x,y\\rangle \\rightarrow |x, \\frac{x^2 - y^2}{2Re(xy)}y\\rangle$$" +
+        " <br />This gate can be used to implement arbitrary nonlinear transformations when combined with linear gates."
+    },
+    {
+        type: 'N',  // Abrams-Lloyd Nonlinear AND gate
+        qty: 4,
+        label: 'N',
+        kind: 'n', 
+        color: [186, 85, 211],  // Medium orchid for AND-type gates
+        numQubits: 2,
+        description: "The N gate is a distinctly nonlinear transformation that acts like a quantum AND operation. It forms the basis for solving NP-complete problems in polynomial time." +
+        " <br />It transforms states as follows:" +
+        " <br />$$|00\\rangle + |11\\rangle \\rightarrow |01\\rangle + |11\\rangle$$" +
+        " <br />$$|01\\rangle + |10\\rangle \\rightarrow |01\\rangle + |11\\rangle$$" +
+        " <br />$$|00\\rangle + |10\\rangle \\rightarrow |00\\rangle + |10\\rangle$$"
+    }
+];
+
   const resetGame = useCallback(async () => {
     // Reset game state in boardUpdater
     resetGameState();
@@ -143,7 +256,20 @@ function AppContent() {
               )}
             </div>
             <div className="gate-palate-container">
+
               <GatePalate
+                gateTypes = {defaultGateTypes}
+              
+                activeGate={activeGate}
+                setActiveGate={setActiveGate}
+                playerBoardRef={playerBoardRef}
+                activeGateUses={activeGateUses}
+                setActiveGateUses={setActiveGateUses}
+                showAlert={showAlert}
+                hideAlert={hideAlert}
+              />
+              <GatePalate
+              gateTypes = {nonlinearGateTypes}
                 activeGate={activeGate}
                 setActiveGate={setActiveGate}
                 playerBoardRef={playerBoardRef}
@@ -154,6 +280,7 @@ function AppContent() {
               />
 
             </div>
+
             
             <div className="board-info-container">
               {boardInfo && (
