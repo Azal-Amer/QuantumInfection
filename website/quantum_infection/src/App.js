@@ -150,7 +150,9 @@ function AppContent() {
                 showAlert={showAlert}
                 hideAlert={hideAlert}
               />
+
             </div>
+            
             <div className="board-info-container">
               {boardInfo && (
                 <div>

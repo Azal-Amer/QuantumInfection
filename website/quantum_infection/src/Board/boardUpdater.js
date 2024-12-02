@@ -1,4 +1,8 @@
+
 let isGameOver = false;
+
+let initialized = false;
+let circuit = null;
 function checkGameOver() {
   if (isGameOver) {
     console.log('Game is over. No further operations allowed.');
@@ -11,95 +15,142 @@ export function endBoardUpdater(board, setBoard) {
   console.log('endBoardUpdater called');
   if (checkGameOver()) return;
   isGameOver = true; // Set the game over flag immediately
+  circuit.run();
+  const measurementResults = circuit.measureAllMultishot(1024);
+  console.log('Measurement results:', measurementResults);
+  const mostProbableState = processMeasurements(measurementResults);
+  console.log('Most probable state:', mostProbableState);
 
-  return fetch('http://127.0.0.1:5000/end_game', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-  })
-    .then(response => response.json())
-    .then(data => {
-      console.log('Game ended:', data);
-      board.updateProbabilities(data.probabilities);
-      var updatedBoard = board.clone();
-      updatedBoard.locked = true;
-      setBoard(updatedBoard);
-      console.log('Board updated:', updatedBoard);
-    })
-    .catch(error => {
-      console.error('Error ending game:', error);
-    });
+  board.updateProbabilities(probabilityRefactorer(mostProbableState));
+  setBoard(board.clone());
+
+
+  return Promise.resolve(true);
 }
 
 export function boardUpdater(board, setBoard, gate) {
   if (checkGameOver()) return;
 
   const qubits = gate.qubits;
-  const sourceURL = 'http://127.0.0.1:5000/apply_gate';
-  const data = {
-    gate: gate.kind,
-    qubits: qubits
-  };
-  const requestOptions = {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
-  };
-  return fetch(sourceURL, requestOptions)
-    .then(response => response.json())
-    .then(data => {
-      if (checkGameOver()) return; // Check again before updating
-      console.log(data);
-      board.updateProbabilities(data.probabilities);
-      console.log('locked', board.locked);
-      setBoard(board.clone());
-    })
-    .catch(error => {
-      console.error('Error:', error);
-    });
+  const gateName = gateNameCleanser(gate.kind);
+  console.log(gateName);
+  let targetQubits;
+  if((qubits.length)>1){
+    console.log(gate.qubits);
+    targetQubits = gate.qubits.map(qubit => qubitFromXY(qubit));
+  }
+  else{
+    targetQubits = qubitFromXY(gate.qubits[0]);
+  }
+  console.log(targetQubits);
+  circuit.appendGate(gateName,targetQubits);
+  circuit.run();
+  const probabilities = circuit.probabilities();
+  console.log('Probabilities:', probabilities);
+  board.updateProbabilities(probabilityRefactorer(probabilities));
+  setBoard(board.clone());
+
+
+  
+  return Promise.resolve(true)
 }
 
-let initialized = false;
+
 
 export function serverBoardInitializer(plusSpaces, minusSpaces) {
   if (checkGameOver()) return Promise.resolve(false);
   if(initialized){ return Promise.resolve(true); }
+  const SIZE = 4;
+  circuit = new window.QuantumCircuit(SIZE**2);
+  // This needs to be size adaptable TODO
+  circuit.appendGate('x', (SIZE**2)-1);
+  // Setting first state to |1>
+  minusSpaces.forEach(space => {
+    console.log('Adding X gate to space:', space);
+    circuit.appendGate('x', qubitFromXY(space));
+    console.log(qubitFromXY(space))
+  });
+  for (let i = 1; i < (SIZE**2)-1; i++) {
+    circuit.appendGate("h", i);
+    console.log(i);
+  }
+  
 
   console.log('Initializing board with plusSpaces:', plusSpaces, 'and minusSpaces:', minusSpaces);
-  const sourceURL = 'http://127.0.0.1:5000/initializeBoard';
-  const data = {
-    plusSpaces: plusSpaces,
-    minusSpaces: minusSpaces
-  };
-  const requestOptions = {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json'
-    },
-    body: JSON.stringify(data),
-    credentials: 'include',
-    mode: 'cors'
-  };
+  circuit.run();
+  console.log(circuit.stateAsString(true))
+
+
+
   initialized = true;
-  return fetch(sourceURL, requestOptions)
-    .then(response => {
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return response.json();
-    })
-    .then(data => {
-      if (checkGameOver()) return false; // Check again before processing
-      console.log('Server response:', data);
-      return true;
-    })
-    .catch(error => {
-      console.error('Error initializing board:', error);
-      return false;
-    });
+  return Promise.resolve(true);
+}
+/**
+ * this function straight up just cleans up
+ * a given gate name so that it can be understood
+ * by quantum-circuit
+ * @param {string} name
+ */
+function gateNameCleanser(name){
+  // make the name lowercase, and only a-z
+  return name.toLowerCase().replace(/[^a-z]/g,'');
+
 }
 
+function qubitFromXY(xy){
+  let x;
+  let y;
+  if(Array.isArray(xy)){
+    y = xy[1];
+    x = xy[0];
+  }
+  else{
+    x = xy.x;
+    y = xy.y;
+  }
+  return y*4 + x;
 
+}
+/**
+ * In previous versions of this program, with the server
+ * the probabilities were returned as a 2d in the form
+ * [[i,P(0),P(1)]...]
+ * We want to make our new probabilities array in that form
+ * @param {int[]} probabilities from quantum-circuit
+ */
+function probabilityRefactorer(probabilities){
+  let newProbabilities = [];
+  for(let i = 0; i < probabilities.length; i++){
+    newProbabilities.push([i,1-probabilities[i],probabilities[i]]);
+  }
+  return newProbabilities;
+  
+}
+/**
+ * This function will take the results of all
+ * the shots we threw at the simulator, and 
+ * return the most probable state as an array.
+ * 
+ * @param {map{String:int}} measurementCounts 
+ * @returns 
+ */
+function processMeasurements(measurementCounts) {
+  // Find the state with the highest count
+  let maxCount = 0;
+  let mostFrequentState = '';
+  
+  for (const [state, count] of Object.entries(measurementCounts)) {
+    if (count > maxCount) {
+      maxCount = count;
+      mostFrequentState = state;
+    }
+  }
+  
+  // Convert the binary string to an array, reversing the order
+  // Example: if mostFrequentState is '10', we first split to ['1','0']
+  // then reverse to get ['0','1'] for correct qubit ordering
+  return mostFrequentState.split('').reverse().map(bit => parseInt(bit));
+}
 
 // Function to reset the game state (use this when starting a new game)
 export function resetGameState() {
