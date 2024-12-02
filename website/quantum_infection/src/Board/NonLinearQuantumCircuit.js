@@ -1,4 +1,4 @@
-var math = require("mathjs");
+const math = window.math;  
 
 export class NonLinearQuantumCircuit extends window.QuantumCircuit {
     constructor() {

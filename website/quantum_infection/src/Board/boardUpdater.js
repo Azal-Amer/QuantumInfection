@@ -1,6 +1,6 @@
 
 let isGameOver = false;
-var math = require("mathjs");
+const math = window.math;  
 
 let initialized = false;
 import { NonLinearQuantumCircuit } from './NonLinearQuantumCircuit';
@@ -76,7 +76,7 @@ export function serverBoardInitializer(plusSpaces, minusSpaces) {
     circuit.appendGate("h", i);
     console.log(i);
   }
-  
+
     circuit.addNonLinearGateType("w", (state, probability) => {
       const phase = math.complex(
           Math.cos(probability * Math.PI * 2),
