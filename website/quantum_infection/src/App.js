@@ -70,6 +70,8 @@ function AppContent() {
   }, [resetGame, showAlert]);
   // This just sends out the waiting for the endgame
   const handleGameEnd = useCallback(() => {
+    console.log('Game has ended. Waiting for final measurements...');
+    console.log(winner)
 
   }, [winner]);
 
