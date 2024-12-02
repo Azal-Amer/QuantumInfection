@@ -19,13 +19,14 @@ jobs:
           
       - name: Install Dependencies
         working-directory: ./website/quantum_infection
-        env:
-          CI: ""
+        
         run: npm install
         
       - name: Build
         working-directory: ./website/quantum_infection
         run: npm run build
+        env:
+          CI: ""
         
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
