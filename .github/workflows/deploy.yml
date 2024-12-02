@@ -3,11 +3,13 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - NonLocal  # or your default branch name
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write    # This line is important for deployment
     
     steps:
       - uses: actions/checkout@v2
@@ -19,17 +21,24 @@ jobs:
           
       - name: Install Dependencies
         working-directory: ./website/quantum_infection
-        
         run: npm install
         
       - name: Build
         working-directory: ./website/quantum_infection
-        run: npm run build
         env:
-          CI: ""
+          CI: false
+        run: npm run build
+        
+      - name: Debug Build Output
+        run: |
+          echo "Listing build directory contents:"
+          ls -la ./python/build
         
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./website/quantum_infection/build
+          publish_dir: ./python/build    # Updated to match your build path
+          force_orphan: true            # This ensures clean deployment
+
+          # Credit Claude 3.5 Sonnet for helping me write this deploy file
