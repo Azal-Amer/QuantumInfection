@@ -227,46 +227,48 @@ const GatePalate = ({ size = 80, gateTypes = defaultGateTypes,
   // };
   const handleCanvasClick = useCallback((event) => {
     // This checks to see if a gate has been clicked on
-    event.stopPropagation();
-  const canvas = canvasRef.current;
-  const rect = canvas.getBoundingClientRect();
-  const x = event.clientX - rect.left;
-  const y = event.clientY - rect.top;
+    // event.stopPropagation();
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
 
-  const clickedGate = gates.find(gate =>
-    x >= gate.x && x <= gate.x + gate.size &&
-    y >= gate.y && y <= gate.y + gate.size
-  );
+    const clickedGate = gates.find(gate =>
+      x >= gate.x && x <= gate.x + gate.size &&
+      y >= gate.y && y <= gate.y + gate.size
+    );
+    console.log('Clicked Gate:', clickedGate);
 
-    // This checks if we even have a gate selected at all
-    const noActiveGate = activeGate == null;
+      // This checks if we even have a gate selected at all
+      const noActiveGate = activeGate == null;
 
-    // This covers if we did have a gate selected, whether or not it's valid to click away
-    if (clickedGate) {
-      
+      // This covers if we did have a gate selected, whether or not it's valid to click away
+      if (clickedGate) {
+        
 
-      // Makes clickedGate a new instance of the gate.
-      const clickedGateCondition = activeGateUses === 0 || activeGateUses === activeGate.numQubits;
-      // If we click away before we put a gate down,
-        // we can choose another gate, but if not,
-        // don't let the user change the gate unless all uses are exhausted
-      const validQty = clickedGate.qty !== null ? clickedGate.qty > 0 : true
-      if ((noActiveGate ||clickedGateCondition)&&validQty&&(!isGameOver)) {
-        // No active gate, so we can select the clicked gate
-        if (process.env.NODE_ENV === 'development') {
+        // Makes clickedGate a new instance of the gate.
+        const clickedGateCondition = activeGateUses === 0 || activeGateUses === activeGate.numQubits;
+        // If we click away before we put a gate down,
+          // we can choose another gate, but if not,
+          // don't let the user change the gate unless all uses are exhausted
+        const validQty = clickedGate.qty !== null ? clickedGate.qty > 0 : true
+        if ((noActiveGate ||clickedGateCondition)&&validQty&&(!isGameOver)) {
+          // No active gate, so we can select the clicked gate
           const newClickedGate = clickedGate.clone()
           setActiveGate(newClickedGate);
           setActiveGateUses(0);
           showAlert( 'info','Active Gate :'+ newClickedGate.type +'-Gate', 
             'You have selected '+activeGateUses+' / '+newClickedGate.numQubits+' qubits'+'<br />' + newClickedGate.description);
-          // console.log('Active Gate:', activeGate);
-          // console.log('Clicked Gate:', newClickedGate);
-          // console.log('Active Gate:', newClickedGate.label);
+          if (process.env.NODE_ENV === 'development') {
+            
+            // console.log('Active Gate:', activeGate);
+            // console.log('Clicked Gate:', newClickedGate);
+            // console.log('Active Gate:', newClickedGate.label);
+          }
+          
         }
-        
+        // If we click away, then the gate uses are zero
       }
-      // If we click away, then the gate uses are zero
-    }
   }, [gates, activeGate, activeGateUses, showAlert, setActiveGate, setActiveGateUses]);
   
 
