@@ -22,85 +22,11 @@ function AppContent() {
   const [showInstructions, setShowInstructions] = useState(true);
   const [rounds, setRounds] = useState(0);
   const [winner, setWinner] = useState(null);
-  const  defaultGateTypes = [
-    { type: 'X',
-       qty: 6, 
-       label: 'X', 
-       kind: 'x',
-      color: [0, 0, 255],
-      numQubits:1 ,
-      description : "The X gate will flip any state, amplitudes on zero go to one, and vice versa."+
-      " <br />$$X = \\begin{pmatrix}0 & 1 \\\\1 & 0\\end{pmatrix}$$"
-    },
-  
-    { type: 'Y', 
-      qty: null, 
-      label: 'Y',
-      kind: 'y',
-       color: 
-      [255, 0, 0],
-      description : "The Y gate will rotate your state 90 degrees around the Y axis, providing a phase shift"+
-      "  <br />$$Y = \\begin{pmatrix}0 & -i \\\\i & 0\\end{pmatrix}$$",
-      numQubits:1  },
-    { type: 'Z',
-       qty: null, 
-       label: 'Z',
-       kind: 'z',
-        color:
-       [0, 255, 0],
-       description : "The Z gate will throw a -1 on your 1 state, and leave your 0 state alone"+
-       " <br />$$Z = \\begin{pmatrix}1 & 0 \\\\0 & -1\\end{pmatrix}$$",
-       numQubits:1  },
-    {
-       type: 'H', 
-       qty: 6, 
-       label: 'H', 
-       kind: 'h',
-       color:[255, 255, 0],
-       numQubits:1,
-       description : "The Hadamard gate will rotate your state 45 degrees. It is apart of the Clifford Gate set."+
-       " <br />$$H = \\frac{1}{\\sqrt{2}} \\begin{pmatrix}1 & 1 \\\\1 & -1\\end{pmatrix}$$"  },
-       {type: 'C^x',
-        qty: 10,
-        label: 'Cx',
-        kind: 'cx',
-        color: [0, 255, 255],  // Cyan color
-        numQubits: 2,  // CNOT operates on 2 qubits
-        description: "The CNOT (Controlled-NOT) gate flips the target qubit if the control qubit is |1⟩. It's a two-qubit gate essential for entanglement. It is apart of the Clifford Gate set" +
-          " <br />$$CNOT = \\begin{pmatrix}1 & 0 & 0 & 0 \\\\0 & 1 & 0 & 0 \\\\0 & 0 & 0 & 1 \\\\0 & 0 & 1 & 0\\end{pmatrix}$$"
-      },
-      {type : 'T',
-        qty:null,
-        label:'T',
-        kind: 't',
-        color:[255,128,0],
-        numQubits:1,
-        description:"The T gate is added to the Clifford Gates to allow them to be a universal gate set. It is needed to access any possible Unitary."+
-        "<br />$$T = \\begin{pmatrix}1 & 0 \\\\0 & e^{i\\pi/4}\\end{pmatrix}$$",
-      },
-      {type : 'S',
-        qty:null,
-        label:'S',
-        kind: 's',
-        color:[255,0,128],
-        numQubits:1,
-        description:"The S gate is apart of the Clifford Set. It is needed to access any possible Unitary."+
-        "<br />$$T = \\begin{pmatrix}1 & 0 \\\\0 & i\\end{pmatrix}$$",
-      },
-      {type: 'C^z',
-        qty: 10,
-        label: 'Cz',
-        kind: 'cz',
-        color: [0, 255, 128],  // Cyan color
-        numQubits: 2,  // CNOT operates on 2 qubits
-        description: "The CZ (Controlled-Z) gate flips the amplitude on the |1⟩ component of the target, if the control qubit is |1⟩. It's a two-qubit gate, which are essential for entanglement. " +
-          " <br />$$CNOT = \\begin{pmatrix}1 & 0 & 0 & 0 \\\\0 & 1 & 0 & 0 \\\\0& 0 & 1 & 0 \\\\0 & 0 & 0 & -1\\end{pmatrix}$$"
-      },
-  ];
+
   const nonlinearGateTypes = [
     {
         type: 'W',  // Weinberg gate
-        qty: 4,
+        qty: null,
         label: 'W',
         kind: 'w',
         color: [147, 112, 219],  // Medium purple for Weinberg gates
@@ -111,7 +37,7 @@ function AppContent() {
     },
     {
         type: 'G',  // Polynomial gate
-        qty: 4, 
+        qty: null, 
         label: 'G',
         kind: 'g',
         color: [138, 43, 226],  // Blue violet for polynomial gates
@@ -122,7 +48,7 @@ function AppContent() {
     },
     {
         type: 'N',  // Abrams-Lloyd Nonlinear AND gate
-        qty: 4,
+        qty: null,
         label: 'N',
         kind: 'n', 
         color: [186, 85, 211],  // Medium orchid for AND-type gates
@@ -258,7 +184,6 @@ function AppContent() {
             <div className="gate-palate-container">
 
               <GatePalate
-                gateTypes = {defaultGateTypes}
               
                 activeGate={activeGate}
                 setActiveGate={setActiveGate}

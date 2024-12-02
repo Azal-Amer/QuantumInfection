@@ -317,6 +317,7 @@ const PlayerBoard = forwardRef(({ activeGate,
               console.log('TAG Bob Gate Quantity',activeGate.originalGate.qty);
 
               activeGate.originalGate.qty -=1;
+              console.log('Original Gate: ',activeGate.originalGate);
               // It looks like the qty param is a deep reference to both alice and bob's quantities. That's bad.
               console.log('TAG Active Quantity',activeGate.originalGate.qty);
               console.log('TAG Alice Gate Quantity',activeGate.originalGate.qty);
@@ -352,6 +353,7 @@ const PlayerBoard = forwardRef(({ activeGate,
           else{
             setActiveGateUses(activeGateUses+1);
             activeGate.originalGate.qty -=1;
+            console.log(activeGate.originalGate);
             if(activeGate.originalGate.qty === 0){
               console.log("You're now out of this gate")
             }
