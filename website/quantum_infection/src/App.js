@@ -67,11 +67,11 @@ function AppContent() {
     return () => {
       window.removeEventListener('gameWinner', handleWinner);
     };
-  }, []);
+  }, [resetGame, showAlert]);
   // This just sends out the waiting for the endgame
   const handleGameEnd = useCallback(() => {
 
-  }, [showAlert, resetGame, winner]);
+  }, [winner]);
 
   
   // Add the event listener for endGame
