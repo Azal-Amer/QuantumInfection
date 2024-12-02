@@ -20,7 +20,7 @@ jobs:
       - name: Install Dependencies
         working-directory: ./website/quantum_infection
         env:
-          CI: false
+          CI: ""
         run: npm install
         
       - name: Build
